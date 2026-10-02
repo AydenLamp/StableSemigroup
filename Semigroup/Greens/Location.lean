@@ -41,7 +41,7 @@ of `y` iff `x`, `y`, and `x * y` are 𝓓-Equivalent. -/
 theorem DEquiv.mul_in_inter_iff_equiv (x y : S) [Finite S] [Pow (WithOne S) ℕ+]
   [PNatPowAssoc (WithOne S)] :
     x * y ∈ ⟦x⟧𝓡 ∩ ⟦y⟧𝓛 ↔ x 𝓓 y ∧ x * y 𝓓 x := by
-  simp_all only [REquiv.set, LEquiv.set, Set.mem_inter_iff, Set.mem_setOf_eq]
+  simp_all only [REquiv.set, LEquiv.set, Set.mem_inter_iff, Set.mem_ofPred_eq]
   constructor
   · rintro ⟨hr, hl⟩
     exact ⟨⟨x * y, ⟨hr.symm, hl⟩⟩, JEquiv.to_dEquiv <| REquiv.to_jEquiv hr⟩
@@ -57,7 +57,7 @@ element in the intersection of the 𝓡-class of `y` and the 𝓛-class of `x`. 
 theorem mul_in_inter_iff_exists_idempotent (x y : S) :
     x * y ∈ ⟦x⟧𝓡 ∩ ⟦y⟧𝓛 ↔ ∃ e, IsIdempotentElem e ∧ e ∈ ⟦y⟧𝓡 ∩ ⟦x⟧𝓛 := by
   constructor
-  · simp_all only [REquiv.set, LEquiv.set, Set.mem_inter_iff, Set.mem_setOf_eq, IsIdempotentElem,
+  · simp_all only [REquiv.set, LEquiv.set, Set.mem_inter_iff, Set.mem_ofPred_eq, IsIdempotentElem,
     and_imp]
     intro hr hl
     have heq : x * y = x * y := by rfl
@@ -65,7 +65,7 @@ theorem mul_in_inter_iff_exists_idempotent (x y : S) :
     have hsurj := hr.symm.surjOn_lClass heq
     specialize hsurj hl.symm
     rcases hsurj with ⟨w, hw, hw_eq⟩
-    simp only [LEquiv.set, Set.mem_setOf_eq] at hw_eq hw
+    simp only [LEquiv.set, Set.mem_ofPred_eq] at hw_eq hw
     have hwRy : w 𝓡 y := by
       rw [← hw_eq]
       apply hr.symm.bijOn_lClass_rEquiv heq hw
@@ -81,7 +81,7 @@ theorem mul_in_inter_iff_exists_idempotent (x y : S) :
       simp only [← WithOne.coe_mul, WithOne.coe_inj] at hu
       nth_rw 2 [← hu]
       rw [← mul_assoc, hw_eq, hu]
-  · simp_all only [REquiv.set, LEquiv.set, Set.mem_inter_iff, Set.mem_setOf_eq,
+  · simp_all only [REquiv.set, LEquiv.set, Set.mem_inter_iff, Set.mem_ofPred_eq,
     forall_exists_index, and_imp]
     intro e hi hr hl
     have he₁ : y = e * y := by
@@ -103,11 +103,12 @@ theorem mul_in_inter_iff_exists_idempotent (x y : S) :
 /-- Idempotent-containing 𝓗-classes are closed under multiplication. -/
 lemma HEquiv.mul_closed_of_idempotent {e x y : S} (he : IsIdempotentElem e)
     (hx : x ∈ ⟦e⟧𝓗) (hy : y ∈ ⟦e⟧𝓗) : x * y ∈ ⟦e⟧𝓗 := by
-  simp_all only [set, Set.mem_setOf_eq]
+  simp_all only [set, Set.mem_ofPred_eq]
   have he : ∃ e, IsIdempotentElem e ∧ e ∈ ⟦y⟧𝓡 ∩ ⟦x⟧𝓛 := by
     exact ⟨e, by simp_all [HEquiv.iff_rEquiv_and_lEquiv]⟩
   rw [← mul_in_inter_iff_exists_idempotent x y] at he
-  simp_all only [iff_rEquiv_and_lEquiv, REquiv.set, LEquiv.set, Set.mem_inter_iff, Set.mem_setOf_eq]
+  simp_all only [iff_rEquiv_and_lEquiv, REquiv.set,
+    LEquiv.set, Set.mem_inter_iff, Set.mem_ofPred_eq]
   exact ⟨REquiv.trans he.1 hx.1, LEquiv.trans he.2 hy.2⟩
 
 /-- For all elements in the 𝓗-class of an idempotent, that idempotent acts as a
@@ -138,7 +139,7 @@ lemma HEquiv.idempotent_eq {e x : S} (hh : x 𝓗 e)
 private lemma HEquiv.exists_inverse_of_idempotent {e x : S}
   (he : IsIdempotentElem e) (hh : x ∈ ⟦e⟧𝓗) :
     ∃ y, y 𝓗 e ∧ x * y = e ∧ y * x = e := by
-  simp only [set, Set.mem_setOf_eq] at hh
+  simp only [set, Set.mem_ofPred_eq] at hh
   have hr₁ : e ≤𝓡 x := by simp [hh]
   obtain ⟨y, hy⟩ := hr₁
   cases y with
@@ -155,7 +156,7 @@ private lemma HEquiv.exists_inverse_of_idempotent {e x : S}
     have hein : e ∈ ⟦x⟧𝓛 := by simp_all
     specialize hsurj hein
     rcases hsurj with ⟨z, hz, hz_eq⟩
-    simp_all only [LEquiv.set, Set.mem_setOf_eq, to_lEquiv, LEquiv.symm]
+    simp_all only [LEquiv.set, Set.mem_ofPred_eq, to_lEquiv, LEquiv.symm]
     have hez : z 𝓗 e := by
       have hl : e 𝓛 e := by simp
       have hpres := hh.symm.to_rEquiv.bijOn_lClass_pres_hClass hex hz hl
@@ -187,17 +188,17 @@ noncomputable def HEquiv.subgroup_of_idempotent {e : S} (he : IsIdempotentElem e
       else x )
   inv_not_mem := by simp_all
   inv_mem := by
-    simp_all only [set, Set.mem_setOf_eq, symm, ↓reduceDIte]
+    simp_all only [set, Set.mem_ofPred_eq, symm, ↓reduceDIte]
     intros x hx
     have h := Classical.choose_spec (HEquiv.exists_inverse_of_idempotent he hx)
     exact h.1
   inv_mul := by
-    simp_all only [set, Set.mem_setOf_eq, symm, ↓reduceDIte]
+    simp_all only [set, Set.mem_ofPred_eq, symm, ↓reduceDIte]
     intros x hx
     have h := Classical.choose_spec (HEquiv.exists_inverse_of_idempotent he hx)
     exact h.2.2
   mul_inv := by
-    simp_all only [set, Set.mem_setOf_eq, symm, ↓reduceDIte]
+    simp_all only [set, Set.mem_ofPred_eq, symm, ↓reduceDIte]
     intros x hx
     have h := Classical.choose_spec (HEquiv.exists_inverse_of_idempotent he hx)
     exact h.2.1
@@ -207,7 +208,8 @@ noncomputable def HEquiv.subgroup_of_idempotent {e : S} (he : IsIdempotentElem e
   rfl
 
 /-- The 𝓗-class of a semigroup as a Group on the subtype `{x : S // x ∈ ⟦e⟧𝓗}` -/
-noncomputable instance HEquiv.group_of_idempotent' {e : S} (he : IsIdempotentElem e) :
+@[instance_reducible] noncomputable def HEquiv.group_of_idempotent' {e : S}
+  (he : IsIdempotentElem e) :
     Group ({x // x ∈ ⟦e⟧𝓗}) :=
   inferInstanceAs (Group (HEquiv.subgroup_of_idempotent he))
 
@@ -217,7 +219,7 @@ theorem HEquiv.idempotent_in_subgroup {x y : S} (h₁ : x 𝓗 y) (h₂ : x * y 
     ∃ e, e 𝓗 x ∧ IsIdempotentElem e := by
   have hh : x * y 𝓗 y := by apply HEquiv.trans h₂ h₁
   have h := mul_in_inter_iff_exists_idempotent x y
-  simp_all only [REquiv.set, LEquiv.set, Set.mem_inter_iff, Set.mem_setOf_eq, to_rEquiv, to_lEquiv,
+  simp_all only [REquiv.set, LEquiv.set, Set.mem_inter_iff, Set.mem_ofPred_eq, to_rEquiv, to_lEquiv,
     and_self, true_iff]
   obtain ⟨e, he₁, he₂⟩ := h
   refine ⟨e, ?_, he₁⟩
@@ -239,7 +241,7 @@ theorem DEquiv.idempotent_in_rClass {e x : S} (he : IsIdempotentElem e) (hx : x 
   | coe u =>
     simp only [← WithOne.coe_mul, WithOne.coe_inj] at hu
     refine ⟨r * u, ?_, ?_⟩
-    · simp only [REquiv.set, Set.mem_setOf_eq]
+    · simp only [REquiv.set]
       refine REquiv.trans ?_ hr₁.symm
       exact ⟨⟨u, by simp⟩, ⟨r, by simp [← WithOne.coe_mul, mul_assoc, hu, her]⟩⟩
     · simp only [IsIdempotentElem, ← mul_assoc]
@@ -256,13 +258,13 @@ theorem DEquiv.idempotent_in_lClass {e x : S} (he : IsIdempotentElem e) (hx : x 
   obtain ⟨u, hu⟩ := hr₁.le
   cases u with
   | one =>
-    simp_all only [mul_one, WithOne.coe_inj, LEquiv.set, Set.mem_setOf_eq, REquiv.refl,
+    simp_all only [mul_one, WithOne.coe_inj, LEquiv.set, Set.mem_ofPred_eq, REquiv.refl,
       LEquiv.to_dEquiv, symm]; subst hu
     use r
   | coe u =>
     simp only [← WithOne.coe_mul, WithOne.coe_inj] at hu
     refine ⟨u * r, ?_, ?_⟩
-    · simp only [LEquiv.set, Set.mem_setOf_eq]
+    · simp only [LEquiv.set, Set.mem_ofPred_eq]
       refine LEquiv.trans ⟨⟨u, by simp⟩, ⟨r, by simp [← WithOne.coe_mul, ← mul_assoc, hu, her]⟩⟩ hr₂
     · simp only [IsIdempotentElem, ← mul_assoc]
       rw [mul_assoc u, hu, mul_assoc, her]
@@ -291,7 +293,7 @@ theorem HEquiv.hClass_of_subgroup {H : Subgroup S} (hH : H.IsMaximal) :
   let K := HEquiv.subgroup_of_idempotent hidem
   have hle : H ≤ K := by
     intros x hx
-    simp only [subgroup_of_idempotent, set, Set.mem_setOf_eq, K]
+    simp only [subgroup_of_idempotent, set, Set.mem_ofPred_eq, K]
     apply HEquiv.ofSubgroup hx H.one_mem
   refine ⟨hidem, ?_⟩
   specialize hH K hle
@@ -317,7 +319,7 @@ lemma DEquiv.bij_on_hClass {e f s t : S} (he : IsIdempotentElem e) (hf : IsIdemp
   obtain ⟨ht_map, ht_inj, ht_surj⟩ := hl.bijOn_hClass ht
   refine Set.BijOn.mk ?_ ?_ ?_
   · intros x hx
-    simp only [HEquiv.set, Set.mem_setOf_eq]
+    simp only [HEquiv.set, Set.mem_ofPred_eq]
     have hh : x * s 𝓗 s := by specialize hs_map hx; simp_all
     specialize ht_map hh
     simpa [← mul_assoc] using ht_map
@@ -327,12 +329,12 @@ lemma DEquiv.bij_on_hClass {e f s t : S} (he : IsIdempotentElem e) (hf : IsIdemp
     exact hs_inj hs hy heq
   · intros y hy
     specialize ht_surj hy
-    simp only [HEquiv.set, Set.mem_image, Set.mem_setOf_eq] at ht_surj
+    simp only [HEquiv.set, Set.mem_image, Set.mem_ofPred_eq] at ht_surj
     rcases ht_surj with ⟨z, hz, hz_eq⟩
     specialize hs_surj hz
     rcases hs_surj with ⟨w, hw, hw_eq⟩
     refine ⟨w, hw, ?_⟩
-    simp_all only [HEquiv.set, Set.mem_setOf_eq]
+    simp_all only [HEquiv.set, Set.mem_ofPred_eq]
     simp only [mul_assoc]
     rw [hw_eq, hz_eq]
 
@@ -404,7 +406,7 @@ theorem DEquiv.maximal_subgroups_equiv {x y : S} {H K : Subgroup S}
     Nonempty (H ≃* K) := by
   obtain ⟨e₁, hi₁, h₁⟩ := HEquiv.hClass_of_subgroup hH
   obtain ⟨e₂, hi₂, h₂⟩ := HEquiv.hClass_of_subgroup hK
-  simp only [Subgroup.mem_def, h₁, HEquiv.set, Set.mem_setOf_eq, h₂] at hx hy
+  simp only [Subgroup.mem_def, h₁, HEquiv.set, Set.mem_ofPred_eq, h₂] at hx hy
   have he : e₁ 𝓓 e₂ := hx.to_dEquiv.symm.trans (hd.trans hy.to_dEquiv)
   have heq₁ : H = HEquiv.subgroup_of_idempotent hi₁ := by ext; simp [Subgroup.mem_def, h₁]
   have heq₂ : K = HEquiv.subgroup_of_idempotent hi₂ := by ext; simp [Subgroup.mem_def, h₂]
