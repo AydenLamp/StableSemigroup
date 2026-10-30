@@ -7,6 +7,7 @@ Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 import Mathlib.Data.Fintype.Option
 import Semigroup.Greens.Basic
 import Semigroup.SemigroupIdempotentPow
+import Semigroup.Stable
 
 /-!
 # Finite Semigroups and Green's Relations
@@ -32,7 +33,7 @@ variable {S : Type*} [Semigroup S] [Finite S] [Pow (WithOne S) ℕ+] [PNatPowAss
 instance _root_.WithOne.finite : Finite (WithOne S) := inferInstanceAs (Finite (Option S))
 
 /-- In finite semigroups, 𝓙-equivalence implies 𝓓-equivalence. -/
-@[simp] lemma JEquiv.to_dEquiv (hj : x 𝓙 y) : x 𝓓 y := by
+@[simp] lemma JEquiv.to_dEquiv' (hj : x 𝓙 y) : x 𝓓 y := by
   have hj₁ := hj
   obtain ⟨⟨s, t, ha⟩, ⟨u, v, hb⟩⟩ := hj₁
   have hab : s * u * x * (v * t) = ↑x := by grind
@@ -140,5 +141,16 @@ theorem HEquiv.of_eq_sandwich (h : u * x * v = x) : x 𝓗 u * x ∧ x 𝓗 x * 
   · apply LEquiv.of_lPreorder_and_jEquiv ⟨u, by simpa [← WithOne.coe_mul, ← mul_assoc]⟩
     simp only [JEquiv, RPreorder.mul_right_self, RPreorder.to_jPreorder, and_true]
     exact ⟨u, 1, by simpa [← WithOne.coe_mul, ← mul_assoc]⟩
+
+/-! ### Stability -/
+
+/-- Finite Semigroups are Stable -/
+instance stable_of_finite : Stable S where
+  rEquiv_of_rPreorder_and_jEquiv := by
+    intros x y hj hr
+    exact REquiv.of_rPreorder_and_jEquiv hr hj
+  lEquiv_of_lPreorder_and_jEquiv := by
+    intros x y hj hl
+    exact LEquiv.of_lPreorder_and_jEquiv hl hj
 
 end Semigroup
