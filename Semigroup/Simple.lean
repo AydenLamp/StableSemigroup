@@ -28,7 +28,7 @@ This file defines simple and 0-simple semigroups and proves basic properties.
 * `isSimple_iff_jEquiv`, `isSimple_iff_ideal_trivial` — characterisations of simplicity.
 * `JPreorder.of_isZeroSimple` — in a 0-simple semigroup, `x ≤𝓙 y` for all nonzero `y`.
 * `JEquiv.of_isZeroSimple` — in a 0-simple semigroup, all nonzero elements are 𝓙-related.
-* `DEquiv.of_isZeroSimple` — in a finite 0-simple semigroup, all nonzero elements are 𝓓-related.
+* `DEquiv.of_isZeroSimple` — in a stable 0-simple semigroup, all nonzero elements are 𝓓-related.
 * `IsZeroSimple.mulImage_eq_univ` — if `S` is 0-simple then `S² = S`.
 -/
 
@@ -53,8 +53,8 @@ variable {S : Type*} [Semigroup S] [IsSimple S]
 @[simp] lemma JEquiv.of_isSimple (x y : S) : x 𝓙 y :=
   ⟨IsSimple.j_total x y, IsSimple.j_total y x⟩
 
-/-- In a finite simple semigroup, all elements are 𝓓-related. -/
-@[simp] lemma DEquiv.of_isSimple [Finite S] (x y : S) :
+/-- In a stable simple semigroup, all elements are 𝓓-related. -/
+@[simp] lemma DEquiv.of_isSimple [Stable S] (x y : S) :
     x 𝓓 y :=
   JEquiv.to_dEquiv <| JEquiv.of_isSimple x y
 
@@ -105,8 +105,8 @@ theorem JPreorder.of_isZeroSimple (x : S) {y : S} (hy : y ≠ 0) : x ≤𝓙 y :
 theorem JEquiv.of_isZeroSimple {x y : S} (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓙 y :=
   ⟨JPreorder.of_isZeroSimple x hy, JPreorder.of_isZeroSimple y hx⟩
 
-/-- In a finite 0-simple semigroup, all nonzero elements are 𝓓-related. -/
-theorem DEquiv.of_isZeroSimple [Finite S] {x y : S} (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓓 y :=
+/-- In a stable 0-simple semigroup, all nonzero elements are 𝓓-related. -/
+theorem DEquiv.of_isZeroSimple [Stable S] {x y : S} (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓓 y :=
   JEquiv.to_dEquiv <| JEquiv.of_isZeroSimple hx hy
 
 end ZeroSimple

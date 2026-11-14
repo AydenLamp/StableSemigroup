@@ -9,13 +9,12 @@ module
 public import Semigroup.ReesMatrix.Defs
 public import Semigroup.Simple
 public import Semigroup.Greens.HClassGroup
-public import Semigroup.IdempotentPow
 
 /-!
 # Rees–Suschkewitsch Theorem (Simple Case)
 
 This file proves the Rees–Suschkewitsch theorem for simple semigroups:
-a finite simple semigroup is isomorphic to a Rees matrix semigroup over a group,
+a stable simple semigroup is isomorphic to a Rees matrix semigroup over a group,
 and conversely every Rees matrix semigroup over a group is simple.
 
 ## Main Definitions
@@ -28,13 +27,17 @@ and conversely every Rees matrix semigroup over a group is simple.
   each 𝓡-equivalent to `e`).
 * `Semigroup.ReesData.sandwich` — the sandwich matrix `P(i,j) = r j * s i` in the
   𝓗-class group of `e`.
-* `Semigroup.reesOf S` — the Rees matrix semigroup type isomorphic to a finite simple `S`.
-* `Semigroup.reesEquiv S` — the explicit `MulEquiv` from `S` to `reesOf S`.
+* `Semigroup.ReesOf S` — the Rees matrix semigroup type isomorphic to a stable simple `S`.
+* `Semigroup.reesEquiv S` — the explicit `MulEquiv` from `S` to `ReesOf S`.
 
 ## Main Results
 
-* `Semigroup.ReesData.decomp` — every element decomposes as `s i * g * r j`.
-* `Semigroup.ReesData.unique` — the decomposition is unique.
+* `Semigroup.exists_isIdempotentElem_of_isSimple` — a stable simple semigroup has an idempotent.
+* `Semigroup.ReesData.exists_eq_mul_mul` — every element decomposes as `s i * g * r j`.
+* `Semigroup.ReesData.eq_of_mul_mul_eq` — the decomposition is unique (from `i_eq_of_mul_mul_eq`,
+  `j_eq_of_mul_mul_eq`,
+  `g_eq_of_mul_mul_eq`).
+* `Semigroup.exists_mulEquiv_rees` — the Rees–Suschkewitsch theorem as an existence statement.
 * `Semigroup.ReesData.mulEquiv` — the multiplicative equivalence `S ≃* Rees C.sandwich`.
 * `Semigroup.Rees.instIsSimple` — every Rees matrix semigroup (without zero) is simple.
 -/
@@ -57,6 +60,17 @@ abbrev LQuot (S : Type*) [Semigroup S] : Type _ :=
 
 /-! ## Rees coordinate data -/
 
+/-- A nonempty stable simple semigroup contains an idempotent: `x * x 𝓗 x` for any `x`,
+so the 𝓗-class of `x` is a group. -/
+theorem exists_isIdempotentElem_of_isSimple {S : Type*} [Semigroup S] [Stable S] [IsSimple S]
+    (x : S) : ∃ e : S, IsIdempotentElem e := by
+  have hj : x * x 𝓙 x := JEquiv.of_isSimple _ _
+  have h : x * x 𝓗 x := (HEquiv.iff_rEquiv_and_lEquiv _ _).2
+    ⟨REquiv.of_rPreorder_of_jEquiv RPreorder.mul_right_self hj,
+      LEquiv.of_lPreorder_of_jEquiv LPreorder.mul_left_self hj⟩
+  obtain ⟨e, -, he⟩ := HEquiv.exists_isIdempotentElem_of_mul (HEquiv.refl x) h
+  exact ⟨e, he⟩
+
 /-- A Rees coordinate system for a semigroup `S` -/
 structure ReesData (S : Type*) [Semigroup S] where
   /-- The chosen idempotent, whose 𝓗-class is the structure group. -/
@@ -68,13 +82,13 @@ structure ReesData (S : Type*) [Semigroup S] where
   /-- Column representative: for each 𝓛-class, an element 𝓡-related to `e`. -/
   r : LQuot S → S
   /-- Each row representative is 𝓛-related to `e`. -/
-  hsL : ∀ i, s i 𝓛 e
+  s_lEquiv : ∀ i, s i 𝓛 e
   /-- Each column representative is 𝓡-related to `e`. -/
-  hrR : ∀ j, r j 𝓡 e
+  r_rEquiv : ∀ j, r j 𝓡 e
   /-- Each row representative maps to its 𝓡-class. -/
-  hsQ : ∀ i, @Quotient.mk S ⟨(· 𝓡 ·), REquiv.isEquivalence⟩ (s i) = i
+  mk_s : ∀ i, @Quotient.mk S ⟨(· 𝓡 ·), REquiv.isEquivalence⟩ (s i) = i
   /-- Each column representative maps to its 𝓛-class. -/
-  hrQ : ∀ j, @Quotient.mk S ⟨(· 𝓛 ·), LEquiv.isEquivalence⟩ (r j) = j
+  mk_r : ∀ j, @Quotient.mk S ⟨(· 𝓛 ·), LEquiv.isEquivalence⟩ (r j) = j
 
 namespace ReesData
 
@@ -91,13 +105,15 @@ noncomputable instance instGroupHClass : Group C.HClass :=
 
 /-- 𝓡-class representatives are left-absorbed by `e`: `s i * e = s i`. -/
 theorem s_mul_e (i : RQuot S) : C.s i * C.e = C.s i :=
-  (LPreorder.le_idempotent C.he _).mp (C.hsL i).1
+  (LPreorder.le_idempotent C.he _).mp (C.s_lEquiv i).1
 
 /-- 𝓛-class representatives are right-absorbed by `e`: `e * r j = r j`. -/
 theorem e_mul_r (j : LQuot S) : C.e * C.r j = C.r j :=
-  (RPreorder.le_idempotent C.he _).mp (C.hrR j).1
+  (RPreorder.le_idempotent C.he _).mp (C.r_rEquiv j).1
 
-variable [Finite S] [IsSimple S]
+section StableSimple
+
+variable [Stable S] [IsSimple S]
 
 /-- The sandwich matrix: `P(i,j) = r j * s i`, which lies in the 𝓗-class of `e`. -/
 noncomputable def sandwich : RQuot S → LQuot S → C.HClass := fun i j =>
@@ -107,89 +123,106 @@ noncomputable def sandwich : RQuot S → LQuot S → C.HClass := fun i j =>
     constructor
     · refine REquiv.of_rPreorder_of_jEquiv ?_ (JEquiv.of_isSimple ..)
       use ↑(C.r j * C.s i)
-      simp[← mul_assoc, ← WithOne.coe_mul, e_mul_r]
+      simp [← mul_assoc, ← WithOne.coe_mul, e_mul_r]
     · refine LEquiv.of_lPreorder_of_jEquiv ?_ (JEquiv.of_isSimple ..)
       use ↑(C.r j * C.s i)
-      simp[← WithOne.coe_mul, mul_assoc, s_mul_e]⟩
+      simp [← WithOne.coe_mul, mul_assoc, s_mul_e]⟩
 
-@[simp] theorem sandwich_val (i : RQuot S) (j : LQuot S) :
+@[simp] theorem coe_sandwich (i : RQuot S) (j : LQuot S) :
     (C.sandwich i j : S) = C.r j * C.s i := rfl
+
+end StableSimple
 
 /-! ### Decomposition -/
 
-omit [Finite S] [IsSimple S] in
 /-- Every element of `S` decomposes as `s i * g * r j` for some `i, j, g`. -/
-theorem decomp (x : S) :
+theorem exists_eq_mul_mul (x : S) :
     ∃ (i : RQuot S) (j : LQuot S) (g : C.HClass), x = C.s i * ↑g * C.r j := by
   let rS : Setoid S := ⟨(· 𝓡 ·), REquiv.isEquivalence⟩
   let lS : Setoid S := ⟨(· 𝓛 ·), LEquiv.isEquivalence⟩
   use Quotient.mk rS x, Quotient.mk lS x
-  have hsiR : C.s ⟦x⟧ 𝓡 x := Quotient.exact (C.hsQ _)
-  have hrjL : C.r ⟦x⟧ 𝓛 x := Quotient.exact (C.hrQ _)
+  have hsiR : C.s ⟦x⟧ 𝓡 x := Quotient.exact (C.mk_s _)
+  have hrjL : C.r ⟦x⟧ 𝓛 x := Quotient.exact (C.mk_r _)
   have hmem := (mul_mem_inter_iff_exists_isIdempotentElem (C.s ⟦x⟧) (C.r ⟦x⟧)).mpr
-      ⟨C.e, C.he, (C.hrR _).symm, (C.hsL _).symm⟩
+      ⟨C.e, C.he, (C.r_rEquiv _).symm, (C.s_lEquiv _).symm⟩
   have hH : C.s ⟦x⟧ * C.r ⟦x⟧ 𝓗 x :=
     (HEquiv.iff_rEquiv_and_lEquiv _ _).mpr ⟨hmem.1.trans hsiR, hmem.2.trans hrjL⟩
   obtain ⟨h, hh_mem, hh_eq⟩ := hmem.1.symm.surjOn_hClass rfl hH.symm
-  obtain ⟨g, hg_mem, hg_eq⟩ := (C.hsL ⟦x⟧).symm.surjOn_hClass (C.s_mul_e ⟦x⟧) hh_mem
+  obtain ⟨g, hg_mem, hg_eq⟩ := (C.s_lEquiv ⟦x⟧).symm.surjOn_hClass (C.s_mul_e ⟦x⟧) hh_mem
   simp_all only
   exact ⟨⟨g, hg_mem⟩, by
     rw [hg_eq, hh_eq]⟩
 
 /-! ### Uniqueness -/
 
--- TODO - seperate this into three lemmas
-/-- The Rees decomposition is unique. -/
-theorem unique (x : S) (i i' : RQuot S) (j j' : LQuot S) (g g' : C.HClass)
-    (hx : x = C.s i * ↑g * C.r j) (hx' : x = C.s i' * ↑g' * C.r j') :
-    i = i' ∧ j = j' ∧ g = g' := by
-  let rS : Setoid S := ⟨(· 𝓡 ·), REquiv.isEquivalence⟩
-  let lS : Setoid S := ⟨(· 𝓛 ·), LEquiv.isEquivalence⟩
-  have hgR : (↑g : S) 𝓡 C.e := g.prop.to_rEquiv
-  have hgR' : (↑g' : S) 𝓡 C.e := g'.prop.to_rEquiv
-  have hi : i = i' := by
-    have h_xRsi : x 𝓡 C.s i := by
-      rw [hx]
-      refine REquiv.of_rPreorder_of_jEquiv ?_ (JEquiv.of_isSimple ..)
-      simp [mul_assoc]
-    have h_xRsi' : x 𝓡 C.s i' := by
-      rw [hx']
-      refine REquiv.of_rPreorder_of_jEquiv ?_ (JEquiv.of_isSimple ..)
-      simp [mul_assoc]
-    rw [← C.hsQ i, ← C.hsQ i']
-    exact Quotient.sound (h_xRsi.symm.trans h_xRsi')
-  have hj : j = j' := by
-    have h_xLrj : x 𝓛 C.r j := by
-      rw [hx]
-      exact LEquiv.of_lPreorder_of_jEquiv LPreorder.mul_left_self (JEquiv.of_isSimple ..)
-    have h_xLrj' : x 𝓛 C.r j' := by
-      rw [hx']
-      exact LEquiv.of_lPreorder_of_jEquiv LPreorder.mul_left_self (JEquiv.of_isSimple ..)
-    rw [← C.hrQ j, ← C.hrQ j']
-    exact Quotient.sound (h_xLrj.symm.trans h_xLrj')
-  refine ⟨hi, hj, ?_⟩
+/-- Row representatives are determined by their 𝓡-class. -/
+theorem eq_of_s_rEquiv {i i' : RQuot S} (h : C.s i 𝓡 C.s i') : i = i' := by
+  rw [← C.mk_s i, ← C.mk_s i']
+  exact Quotient.sound h
+
+/-- Column representatives are determined by their 𝓛-class. -/
+theorem eq_of_r_lEquiv {j j' : LQuot S} (h : C.r j 𝓛 C.r j') : j = j' := by
+  rw [← C.mk_r j, ← C.mk_r j']
+  exact Quotient.sound h
+
+/-- The middle coordinate is unique once the row and column are fixed. -/
+theorem g_eq_of_mul_mul_eq {i : RQuot S} {j : LQuot S} {g g' : C.HClass}
+    (h : C.s i * ↑g * C.r j = C.s i * ↑g' * C.r j) : g = g' := by
   apply Subtype.ext
-  have inj := LEquiv.injOn_hClass (C.hsL i).symm (C.s_mul_e i) g.prop g'.prop
+  have inj := LEquiv.injOn_hClass (C.s_lEquiv i).symm (C.s_mul_e i) g.prop g'.prop
   simp only at inj
   apply inj
   have h_sir_Rsi := ((mul_mem_inter_iff_exists_isIdempotentElem (C.s i) (C.r j)).2
-    ⟨C.e, C.he, (C.hrR j).symm, (C.hsL i).symm⟩).1.symm
+    ⟨C.e, C.he, (C.r_rEquiv j).symm, (C.s_lEquiv i).symm⟩).1.symm
   have mk_h_mem (g₀ : C.HClass) : C.s i * ↑g₀ ∈ ⟦C.s i⟧𝓗 := by
     have h := (mul_mem_inter_iff_exists_isIdempotentElem (C.s i) (↑g₀)).2
-      ⟨C.e, C.he, g₀.prop.to_rEquiv.symm, (C.hsL i).symm⟩
+      ⟨C.e, C.he, g₀.prop.to_rEquiv.symm, (C.s_lEquiv i).symm⟩
     exact (HEquiv.iff_rEquiv_and_lEquiv _ _).2
-      ⟨h.1, h.2.trans (g₀.prop.to_lEquiv.trans (C.hsL i).symm)⟩
+      ⟨h.1, h.2.trans (g₀.prop.to_lEquiv.trans (C.s_lEquiv i).symm)⟩
   have inj' := REquiv.injOn_hClass h_sir_Rsi rfl (mk_h_mem g) (mk_h_mem g')
   simp only at inj'
-  apply inj'
-  rw [← hx, hx', hi, hj]
+  exact inj' h
+
+variable [Stable S] [IsSimple S]
+
+/-- `s i * g * r j` lies in the 𝓡-class of `s i`. -/
+theorem mul_mul_rEquiv_s (i : RQuot S) (j : LQuot S) (g : C.HClass) :
+    C.s i * ↑g * C.r j 𝓡 C.s i :=
+  REquiv.of_rPreorder_of_jEquiv (by simp [mul_assoc]) (JEquiv.of_isSimple ..)
+
+/-- `s i * g * r j` lies in the 𝓛-class of `r j`. -/
+theorem mul_mul_lEquiv_r (i : RQuot S) (j : LQuot S) (g : C.HClass) :
+    C.s i * ↑g * C.r j 𝓛 C.r j :=
+  LEquiv.of_lPreorder_of_jEquiv LPreorder.mul_left_self (JEquiv.of_isSimple ..)
+
+/-- The row coordinate of a Rees decomposition is unique. -/
+theorem i_eq_of_mul_mul_eq {i i' : RQuot S} {j j' : LQuot S} {g g' : C.HClass}
+    (h : C.s i * ↑g * C.r j = C.s i' * ↑g' * C.r j') : i = i' := by
+  have h₁ := C.mul_mul_rEquiv_s i j g
+  rw [h] at h₁
+  exact C.eq_of_s_rEquiv (h₁.symm.trans (C.mul_mul_rEquiv_s i' j' g'))
+
+/-- The column coordinate of a Rees decomposition is unique. -/
+theorem j_eq_of_mul_mul_eq {i i' : RQuot S} {j j' : LQuot S} {g g' : C.HClass}
+    (h : C.s i * ↑g * C.r j = C.s i' * ↑g' * C.r j') : j = j' := by
+  have h₁ := C.mul_mul_lEquiv_r i j g
+  rw [h] at h₁
+  exact C.eq_of_r_lEquiv (h₁.symm.trans (C.mul_mul_lEquiv_r i' j' g'))
+
+/-- The Rees decomposition is unique. -/
+theorem eq_of_mul_mul_eq {i i' : RQuot S} {j j' : LQuot S} {g g' : C.HClass}
+    (h : C.s i * ↑g * C.r j = C.s i' * ↑g' * C.r j') :
+    i = i' ∧ j = j' ∧ g = g' := by
+  obtain rfl := C.i_eq_of_mul_mul_eq h
+  obtain rfl := C.j_eq_of_mul_mul_eq h
+  exact ⟨rfl, rfl, C.g_eq_of_mul_mul_eq h⟩
 
 /-! ### Forward and inverse maps -/
 
 /-- The forward map: decompose `x` and return the Rees matrix element. -/
 noncomputable def toRees (x : S) : Rees C.sandwich :=
-  ⟨(C.decomp x).choose, (C.decomp x).choose_spec.choose,
-  (C.decomp x).choose_spec.choose_spec.choose⟩
+  ⟨(C.exists_eq_mul_mul x).choose, (C.exists_eq_mul_mul x).choose_spec.choose,
+  (C.exists_eq_mul_mul x).choose_spec.choose_spec.choose⟩
 
 /-- The inverse map: given a Rees element `⟨i, j, g⟩`, return `s i * g * r j`. -/
 noncomputable def fromRees (z : Rees C.sandwich) : S :=
@@ -197,7 +230,7 @@ noncomputable def fromRees (z : Rees C.sandwich) : S :=
 
 theorem toRees_spec (x : S) :
     x = C.s (C.toRees x).i * ↑(C.toRees x).g * C.r (C.toRees x).j :=
-  (C.decomp x).choose_spec.choose_spec.choose_spec
+  (C.exists_eq_mul_mul x).choose_spec.choose_spec.choose_spec
 
 /-! ### The multiplicative equivalence -/
 
@@ -207,7 +240,7 @@ noncomputable def mulEquiv : S ≃* Rees C.sandwich where
   invFun := C.fromRees
   left_inv x := (C.toRees_spec x).symm
   right_inv z := by
-    obtain ⟨hi, hj, hg⟩ := C.unique _ _ z.i _ z.j _ z.g (C.toRees_spec _) rfl
+    obtain ⟨hi, hj, hg⟩ := C.eq_of_mul_mul_eq (C.toRees_spec (C.fromRees z)).symm
     exact Rees.ext (hi := hi) (hj := hj) (hg := hg)
   map_mul' x y := by
     have h_cand : x * y = C.s (C.toRees x).i *
@@ -217,7 +250,7 @@ noncomputable def mulEquiv : S ≃* Rees C.sandwich where
       have hcoe : ∀ (a b : C.HClass), (↑(a * b) : S) = ↑a * ↑b := fun _ _ => rfl
       have hPval : ∀ i j, (↑(C.sandwich i j) : S) = C.r j * C.s i := fun _ _ => rfl
       grind
-    obtain ⟨hi, hj, hg⟩ := C.unique _ _ _ _ _ _ _ (C.toRees_spec (x * y)) h_cand
+    obtain ⟨hi, hj, hg⟩ := C.eq_of_mul_mul_eq ((C.toRees_spec (x * y)).symm.trans h_cand)
     apply Rees.ext
     · rw [hi]
       simp
@@ -226,12 +259,18 @@ noncomputable def mulEquiv : S ≃* Rees C.sandwich where
     · rw [hg]
       simp
 
+@[simp] theorem mulEquiv_apply (x : S) : C.mulEquiv x = C.toRees x := rfl
+
+@[simp] theorem mulEquiv_symm_apply (z : Rees C.sandwich) :
+    C.mulEquiv.symm z = C.s z.i * ↑z.g * C.r z.j := rfl
+
 /-! ### Construction from simplicity -/
 
-/-- Construct a `ReesData` for a finite simple semigroup. -/
-noncomputable def ofSimple [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] : ReesData S :=
-  let e := (default : S) ^ (exists_idempotent_ppow (default : S)).choose
-  have he : IsIdempotentElem e := (exists_idempotent_ppow (default : S)).choose_spec
+/-- Construct a `ReesData` for a nonempty stable simple semigroup. -/
+noncomputable def ofSimple [Nonempty S] : ReesData S :=
+  let e := (exists_isIdempotentElem_of_isSimple (Classical.arbitrary S)).choose
+  have he : IsIdempotentElem e :=
+    (exists_isIdempotentElem_of_isSimple (Classical.arbitrary S)).choose_spec
   let h_r : ∀ j : LQuot S, ∃ z : S, z 𝓡 e ∧
       @Quotient.mk S ⟨(· 𝓛 ·), LEquiv.isEquivalence⟩ z = j := fun j => by
     obtain ⟨y, rfl⟩ := Quotient.exists_rep j
@@ -246,10 +285,10 @@ noncomputable def ofSimple [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] : ReesDat
     he := he
     s := fun i => Classical.choose (h_s i)
     r := fun j => Classical.choose (h_r j)
-    hsL := fun i => (Classical.choose_spec (h_s i)).1
-    hrR := fun j => (Classical.choose_spec (h_r j)).1
-    hsQ := fun i => (Classical.choose_spec (h_s i)).2
-    hrQ := fun j => (Classical.choose_spec (h_r j)).2 }
+    s_lEquiv := fun i => (Classical.choose_spec (h_s i)).1
+    r_rEquiv := fun j => (Classical.choose_spec (h_r j)).1
+    mk_s := fun i => (Classical.choose_spec (h_s i)).2
+    mk_r := fun j => (Classical.choose_spec (h_r j)).2 }
 
 end ReesData
 
@@ -259,17 +298,21 @@ section ReesTheorem
 
 open Semigroup
 
-/-- The Rees matrix semigroup type that is isomorphic to a finite simple semigroup `S`. -/
-noncomputable abbrev reesOf (S : Type uS) [Finite S] [Semigroup S] [IsSimple S]
-  [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] :
+/-- The Rees matrix semigroup type that is isomorphic to a stable simple semigroup `S`. -/
+noncomputable abbrev ReesOf (S : Type uS) [Semigroup S] [Stable S] [IsSimple S] [Nonempty S] :
     Type uS :=
   Rees (ReesData.ofSimple (S := S)).sandwich
 
 /-- The explicit multiplicative equivalence from `S` to its Rees matrix semigroup. -/
-noncomputable def reesEquiv (S : Type uS) [Finite S] [Semigroup S] [IsSimple S]
-  [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] :
-    S ≃* reesOf S :=
+noncomputable def reesEquiv (S : Type uS) [Semigroup S] [Stable S] [IsSimple S] [Nonempty S] :
+    S ≃* ReesOf S :=
   (ReesData.ofSimple (S := S)).mulEquiv
+
+/-- **Rees–Suschkewitsch theorem**: a nonempty stable simple semigroup is isomorphic to a
+Rees matrix semigroup over a group. -/
+theorem exists_mulEquiv_rees (S : Type uS) [Semigroup S] [Stable S] [IsSimple S] [Nonempty S] :
+    ∃ (I J G : Type uS) (_ : Group G) (P : I → J → G), Nonempty (S ≃* Rees P) :=
+  ⟨_, _, _, _, _, ⟨reesEquiv S⟩⟩
 
 end ReesTheorem
 
@@ -281,8 +324,7 @@ open Semigroup MulTwoSidedIdeal
 
 variable {I : Type*} {J : Type*} {G : Type*} [Group G] (P : I → J → G)
 
-/-- Every Rees matrix semigroup (without zero) over a group is simple:
-for any element `a`, the two-sided ideal generated by `a` is the whole semigroup. -/
+/-- In a Rees matrix semigroup over a group, every `y` is of the form `s * x * t`. -/
 theorem Rees.exists_mul_mul_eq :
     ∀ (x y : Rees P), ∃ (s t : Rees P), s * x * t = y := by
   intro ⟨ix, jx, gx⟩ ⟨iy, jy, gy⟩

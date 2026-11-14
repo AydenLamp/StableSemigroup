@@ -52,7 +52,7 @@ theorem ReesZero.isZeroSimple
     refine ⟨some ⟨Classical.arbitrary I, j₀, 1⟩,
             some ⟨Classical.arbitrary I, j₀, 1⟩, ?_⟩
     change ¬ (some _ * some _ = none)
-    rw [ReesZero.mul_def, ← hg₀]
+    rw [ReesZero.some_mul_some, ← hg₀]
     exact Option.isSome_iff_ne_none.mp rfl
   ideal_trivial := by
     intro K
@@ -80,7 +80,7 @@ theorem ReesZero.isZeroSimple
             have h1 : s * some x₀ ∈ K := K.mul_mem_mem hx₀ s
             have h2 : s * some x₀ * t ∈ K := K.mem_mul_mem h1 t
             convert h2 using 1
-            simp only [s, t, ReesZero.mul_def, ← hpj, ← hpi]
+            simp only [s, t, ReesZero.some_mul_some, ← hpj, ← hpi]
             congr 1; simp [mul_assoc]
         exact SetLike.ext (fun a => ⟨fun _ => trivial, fun _ => hK_all a⟩)
       · left

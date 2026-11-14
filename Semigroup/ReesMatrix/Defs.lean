@@ -93,14 +93,14 @@ instance ReesZero.instMul : Mul (Option (ReesZero P)) where
 @[simp] lemma ReesZero.mul_none (x : Option (ReesZero P)) :
     x * none = none := by rcases x <;> rfl
 
-@[simp] lemma ReesZero.mul_def (x y : (ReesZero P)) :
+@[simp] lemma ReesZero.some_mul_some (x y : (ReesZero P)) :
     some x * some y =
       (match P y.i x.j with
         | some pg => (some ⟨x.i, y.j, x.g * pg * y.g⟩ : Option (ReesZero P))
         | none => (none : Option (ReesZero P))) := by rfl
 
-lemma ReesZero.mul_of_ne_none (x y : ReesZero P) {g : G} (hp : P y.i x.j = some g) :
-    some x * some y = some ⟨x.i, y.j, x.g * g * y.g⟩ := by simp_all [mul_def]
+lemma ReesZero.some_mul_some_of_eq_some (x y : ReesZero P) {g : G} (hp : P y.i x.j = some g) :
+    some x * some y = some ⟨x.i, y.j, x.g * g * y.g⟩ := by simp_all [some_mul_some]
 
 instance ReesZero.instSemigroup : Semigroup (Option (ReesZero P)) where
   mul_assoc := by
@@ -125,8 +125,6 @@ instance ReesZero.instSemigroup : Semigroup (Option (ReesZero P)) where
         simp [← hp₁, h₁]
       · simp_all
 
-instance : Semigroup (Option (ReesZero P)) := ReesZero.instSemigroup P
-
 /-- `Option (ReesZero P)` has zero given by `none`. -/
 instance ReesZero.instZero : Zero (Option (ReesZero P)) where
   zero := none
@@ -138,7 +136,7 @@ instance ReesZero.instSemigroupWithZero : SemigroupWithZero (Option (ReesZero P)
 
 /-- Given an element `(i, j, g)` of a *regular* Rees' Matrix semigroup with zero, there exists
 a `i'` such that `P i' j ≠ none`. -/
-lemma ReesZero.exists_nonzero_col (hreg : ∀ x : Option (ReesZero P), IsRegularElem x)
+lemma ReesZero.exists_sandwich_ne_none_of_j (hreg : ∀ x : Option (ReesZero P), IsRegularElem x)
   (x : ReesZero P) :
     ∃ i' : I, P i' x.j ≠ none := by
   simp_all only [IsRegularElem]
@@ -154,7 +152,7 @@ lemma ReesZero.exists_nonzero_col (hreg : ∀ x : Option (ReesZero P), IsRegular
 
 /-- Given an element `(i, j, g)` of a *regular* Rees' Matrix semigroup with zero, there exists
 a `j'` such that `P i j' ≠ none`. -/
-lemma ReesZero.exists_nonzero_row (hreg : ∀ x : Option (ReesZero P), IsRegularElem x)
+lemma ReesZero.exists_sandwich_ne_none_of_i (hreg : ∀ x : Option (ReesZero P), IsRegularElem x)
   (x : ReesZero P) :
     ∃ j' : J, P x.i j' ≠ none := by
   simp_all only [IsRegularElem]
@@ -162,7 +160,7 @@ lemma ReesZero.exists_nonzero_row (hreg : ∀ x : Option (ReesZero P), IsRegular
   rcases hreg with ⟨y, hy⟩
   rcases y with (_ | y')
   · simp_all
-  · simp_all only [mul_def]
+  · simp_all only [some_mul_some]
     by_cases hp : P y'.i x.j ≠ none
     · obtain ⟨g, hg⟩ := Option.ne_none_iff_exists.mp hp
       rw [← hg] at hy
@@ -174,8 +172,7 @@ lemma ReesZero.exists_nonzero_row (hreg : ∀ x : Option (ReesZero P), IsRegular
 
 /-- A Rees Matrix semigroup with zero is Regular iff every row and every column of its
 sandwich matrix has a nonzero entry. -/
-theorem ReesZero.regular_iff_nonzero (hi : ∀ i, ∃ x : ReesZero P, x.i = i)
-  (hj : ∀ j, ∃ x : ReesZero P, x.j = j) :
+theorem ReesZero.forall_isRegularElem_iff [Nonempty I] [Nonempty J] :
     (∀ x : Option (ReesZero P), IsRegularElem x) ↔
     (∀ i : I, ∃ j : J, P i j ≠ none) ∧
     (∀ j : J, ∃ i : I, P i j ≠ none) := by
@@ -183,13 +180,11 @@ theorem ReesZero.regular_iff_nonzero (hi : ∀ i, ∃ x : ReesZero P, x.i = i)
   · intro hreg
     constructor
     · intro i
-      obtain ⟨x, hx⟩ := hi i
-      rw [← hx]
-      exact ReesZero.exists_nonzero_row P hreg x
+      obtain ⟨j⟩ := ‹Nonempty J›
+      exact ReesZero.exists_sandwich_ne_none_of_i P hreg ⟨i, j, 1⟩
     · intro j
-      obtain ⟨x, hx⟩ := hj j
-      rw [← hx]
-      exact ReesZero.exists_nonzero_col P hreg x
+      obtain ⟨i⟩ := ‹Nonempty I›
+      exact ReesZero.exists_sandwich_ne_none_of_j P hreg ⟨i, j, 1⟩
   · rintro ⟨hi₂, hj₂⟩
     simp only [IsRegularElem]
     intro x
