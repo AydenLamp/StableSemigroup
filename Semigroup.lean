@@ -4,3 +4,4 @@ import Semigroup.Greens.Lemma
 import Semigroup.Stable
 import Semigroup.SemigroupIdempotentPow
 import Semigroup.Greens.Finite
+import Semigroup.Greens.Location
