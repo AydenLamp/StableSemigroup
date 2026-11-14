@@ -1,13 +1,5 @@
-import Semigroup.Greens.Defs
-import Semigroup.Greens.Basic
-import Semigroup.Greens.Lemma
-import Semigroup.Greens.Stable
-import Semigroup.SemigroupIdempotentPow
-import Semigroup.Greens.Finite
 import Semigroup.Greens.Location
-import Semigroup.Substructures
 import Semigroup.Regular
-import Semigroup.Ideal.Basic
-import Semigroup.Ideal.Defs
-import Semigroup.Ideal.Green
-import Semigroup.Ideal.Simple
+import Semigroup.ReesMatrix.Simple
+
+#redundant_imports

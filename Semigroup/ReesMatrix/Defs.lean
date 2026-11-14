@@ -1,4 +1,10 @@
+/-
+Copyright (c) 2026 The Mathlib Contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
+-/
 
+import Mathlib
 import Semigroup.Regular
 import Mathlib.Algebra.Order.GroupWithZero.Canonical
 
