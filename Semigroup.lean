@@ -7,3 +7,7 @@ import Semigroup.Greens.Finite
 import Semigroup.Greens.Location
 import Semigroup.Substructures
 import Semigroup.Regular
+import Semigroup.Ideal.Basic
+import Semigroup.Ideal.Defs
+import Semigroup.Ideal.Green
+import Semigroup.Ideal.Quotient
