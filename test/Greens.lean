@@ -18,9 +18,9 @@ example (h : x ≤𝓗 y) : x ≤𝓙 y := by grind
 example (he : IsIdempotentElem e) (hx : x 𝓗 e) : e * x = x ∧ x * e = x := by grind
 
 /-! `grind`: stability, and 𝓓 = 𝓙 in stable semigroups. -/
-example [Stable S] (hj : x 𝓙 y) (hr : x ≤𝓡 y) : x 𝓡 y := by grind
-example [Stable S] (h : x 𝓙 y) : x 𝓓 y := by grind
-example [Stable S] (h : x 𝓓 y) (h' : y 𝓙 z) : x 𝓓 z := by grind [JEquiv.trans]
+example [IsStable S] (hj : x 𝓙 y) (hr : x ≤𝓡 y) : x 𝓡 y := by grind
+example [IsStable S] (h : x 𝓙 y) : x 𝓓 y := by grind
+example [IsStable S] (h : x 𝓓 y) (h' : y 𝓙 z) : x 𝓓 z := by grind [JEquiv.trans]
 
 /-! `simp` normal forms. -/
 example : y ∈ ⟦x⟧𝓡 ↔ y 𝓡 x := by simp
@@ -37,6 +37,6 @@ example : x 𝓙 x := by rfl
 
 /-! Finite semigroups are stable with no extra power instances on `WithOne S`. -/
 example [Finite S] (h : x 𝓙 y) : x 𝓓 y := by grind
-example [Finite S] : Stable S := inferInstance
+example [Finite S] : IsStable S := inferInstance
 
 end Semigroup

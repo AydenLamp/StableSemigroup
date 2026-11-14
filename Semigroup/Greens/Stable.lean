@@ -14,7 +14,7 @@ public import Semigroup.Greens.Basic
 This file defines stable semigroups and proves basic properties about them.
 
 ## Main Definitions
-* `Semigroup.Stable` - A semigroup is stable if it satisfies the following two properties:
+* `Semigroup.IsStable` - A semigroup is stable if it satisfies the following two properties:
   * If `x ≤𝓡 y` and `x 𝓙 y`, then `x 𝓡 y` (`Semigroup.REquiv.of_rPreorder_of_jEquiv`).
   * If `x ≤𝓛 y` and `x 𝓙 y`, then `x 𝓛 y` (`Semigroup.LEquiv.of_lPreorder_of_jEquiv`).
 
@@ -29,22 +29,22 @@ public section
 namespace Semigroup
 
 /-- A semigroup is *stable* if 𝓙-equivalence upgrades the 𝓡- and 𝓛-preorders to
-equivalences. Finite semigroups are stable (`Semigroup.stable_of_finite`). -/
-class Stable (S : Type*) [Semigroup S] where
+equivalences. Finite semigroups are stable (`Semigroup.isStable_of_finite`). -/
+class IsStable (S : Type*) [Semigroup S] where
   /-- `x ≤𝓡 y` and `x 𝓙 y` imply `x 𝓡 y`. -/
   rEquiv_of_rPreorder_of_jEquiv {x y : S} (hr : x ≤𝓡 y) (hj : x 𝓙 y) : x 𝓡 y
   /-- `x ≤𝓛 y` and `x 𝓙 y` imply `x 𝓛 y`. -/
   lEquiv_of_lPreorder_of_jEquiv {x y : S} (hl : x ≤𝓛 y) (hj : x 𝓙 y) : x 𝓛 y
 
-variable {S : Type*} [Semigroup S] [Stable S] {x y u v : S}
+variable {S : Type*} [Semigroup S] [IsStable S] {x y u v : S}
 
 /-- In stable semigroups, `x ≤𝓡 y` and `x 𝓙 y` imply `x 𝓡 y`. -/
 @[grind →] lemma REquiv.of_rPreorder_of_jEquiv (hr : x ≤𝓡 y) (hj : x 𝓙 y) : x 𝓡 y :=
-  Stable.rEquiv_of_rPreorder_of_jEquiv hr hj
+  IsStable.rEquiv_of_rPreorder_of_jEquiv hr hj
 
 /-- In stable semigroups, `x ≤𝓛 y` and `x 𝓙 y` imply `x 𝓛 y`. -/
 @[grind →] lemma LEquiv.of_lPreorder_of_jEquiv (hl : x ≤𝓛 y) (hj : x 𝓙 y) : x 𝓛 y :=
-  Stable.lEquiv_of_lPreorder_of_jEquiv hl hj
+  IsStable.lEquiv_of_lPreorder_of_jEquiv hl hj
 
 /-- In stable semigroups, 𝓙-equivalent elements are 𝓓-equivalent. -/
 lemma JEquiv.to_dEquiv (hj : x 𝓙 y) : x 𝓓 y := by

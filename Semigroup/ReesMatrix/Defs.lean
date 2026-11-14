@@ -103,27 +103,9 @@ lemma ReesZero.some_mul_some_of_eq_some (x y : ReesZero P) {g : G} (hp : P y.i x
     some x * some y = some ⟨x.i, y.j, x.g * g * y.g⟩ := by simp_all [some_mul_some]
 
 instance ReesZero.instSemigroup : Semigroup (Option (ReesZero P)) where
-  mul_assoc := by
-    intro a b c
-    rcases a with (hn | a)
-    · simp
-    rcases b with (hn | b)
-    · simp
-    rcases c with (hn | c)
-    · simp
-    simp
-    by_cases h₁ : P b.i a.j ≠ none
-    · obtain ⟨p₁, hp₁⟩ := Option.ne_none_iff_exists.mp h₁
-      simp [← hp₁]
-      · by_cases h₂ : P c.i b.j ≠ none
-        · obtain ⟨p₂, hp₂⟩ := Option.ne_none_iff_exists.mp h₂
-          simp [← hp₂, ← hp₁, ← mul_assoc]
-        · simp_all
-    · simp_all
-      by_cases h₂ : P c.i b.j ≠ none
-      · obtain ⟨p₁, hp₁⟩ := Option.ne_none_iff_exists.mp h₂
-        simp [← hp₁, h₁]
-      · simp_all
+  mul_assoc a b c := by
+    rcases a with _ | a <;> rcases b with _ | b <;> rcases c with _ | c <;> try simp
+    rcases h₁ : P b.i a.j <;> rcases h₂ : P c.i b.j <;> simp [h₁, h₂, mul_assoc]
 
 /-- `Option (ReesZero P)` has zero given by `none`. -/
 instance ReesZero.instZero : Zero (Option (ReesZero P)) where
@@ -139,16 +121,9 @@ a `i'` such that `P i' j ≠ none`. -/
 lemma ReesZero.exists_sandwich_ne_none_of_j (hreg : ∀ x : Option (ReesZero P), IsRegularElem x)
   (x : ReesZero P) :
     ∃ i' : I, P i' x.j ≠ none := by
-  simp_all only [IsRegularElem]
-  specialize hreg (some x)
-  rcases hreg with ⟨y, hy⟩
-  rcases y with (_ | y')
-  · contradiction
-  · by_cases hp : P y'.i x.j ≠ none
-    · use y'.i
-    · simp_all only [not_not]
-      by_contra hneg
-      simp_all
+  obtain ⟨_ | y, hy⟩ := hreg (some x)
+  · simp at hy
+  · exact ⟨y.i, fun h => by simp [h] at hy⟩
 
 /-- Given an element `(i, j, g)` of a *regular* Rees' Matrix semigroup with zero, there exists
 a `j'` such that `P i j' ≠ none`. -/

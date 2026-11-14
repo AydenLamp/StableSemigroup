@@ -54,7 +54,7 @@ variable {S : Type*} [Semigroup S] [IsSimple S]
   ⟨IsSimple.j_total x y, IsSimple.j_total y x⟩
 
 /-- In a stable simple semigroup, all elements are 𝓓-related. -/
-@[simp] lemma DEquiv.of_isSimple [Stable S] (x y : S) :
+@[simp] lemma DEquiv.of_isSimple [IsStable S] (x y : S) :
     x 𝓓 y :=
   JEquiv.to_dEquiv <| JEquiv.of_isSimple x y
 
@@ -106,7 +106,7 @@ theorem JEquiv.of_isZeroSimple {x y : S} (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓙 
   ⟨JPreorder.of_isZeroSimple x hy, JPreorder.of_isZeroSimple y hx⟩
 
 /-- In a stable 0-simple semigroup, all nonzero elements are 𝓓-related. -/
-theorem DEquiv.of_isZeroSimple [Stable S] {x y : S} (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓓 y :=
+theorem DEquiv.of_isZeroSimple [IsStable S] {x y : S} (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓓 y :=
   JEquiv.to_dEquiv <| JEquiv.of_isZeroSimple hx hy
 
 end ZeroSimple

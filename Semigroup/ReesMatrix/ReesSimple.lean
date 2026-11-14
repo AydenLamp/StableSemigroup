@@ -62,7 +62,7 @@ abbrev LQuot (S : Type*) [Semigroup S] : Type _ :=
 
 /-- A nonempty stable simple semigroup contains an idempotent: `x * x 𝓗 x` for any `x`,
 so the 𝓗-class of `x` is a group. -/
-theorem exists_isIdempotentElem_of_isSimple {S : Type*} [Semigroup S] [Stable S] [IsSimple S]
+theorem exists_isIdempotentElem_of_isSimple {S : Type*} [Semigroup S] [IsStable S] [IsSimple S]
     (x : S) : ∃ e : S, IsIdempotentElem e := by
   have hj : x * x 𝓙 x := JEquiv.of_isSimple _ _
   have h : x * x 𝓗 x := (HEquiv.iff_rEquiv_and_lEquiv _ _).2
@@ -113,7 +113,7 @@ theorem e_mul_r (j : LQuot S) : C.e * C.r j = C.r j :=
 
 section StableSimple
 
-variable [Stable S] [IsSimple S]
+variable [IsStable S] [IsSimple S]
 
 /-- The sandwich matrix: `P(i,j) = r j * s i`, which lies in the 𝓗-class of `e`. -/
 noncomputable def sandwich : RQuot S → LQuot S → C.HClass := fun i j =>
@@ -183,7 +183,7 @@ theorem g_eq_of_mul_mul_eq {i : RQuot S} {j : LQuot S} {g g' : C.HClass}
   simp only at inj'
   exact inj' h
 
-variable [Stable S] [IsSimple S]
+variable [IsStable S] [IsSimple S]
 
 /-- `s i * g * r j` lies in the 𝓡-class of `s i`. -/
 theorem mul_mul_rEquiv_s (i : RQuot S) (j : LQuot S) (g : C.HClass) :
@@ -299,18 +299,18 @@ section ReesTheorem
 open Semigroup
 
 /-- The Rees matrix semigroup type that is isomorphic to a stable simple semigroup `S`. -/
-noncomputable abbrev ReesOf (S : Type uS) [Semigroup S] [Stable S] [IsSimple S] [Nonempty S] :
+noncomputable abbrev ReesOf (S : Type uS) [Semigroup S] [IsStable S] [IsSimple S] [Nonempty S] :
     Type uS :=
   Rees (ReesData.ofSimple (S := S)).sandwich
 
 /-- The explicit multiplicative equivalence from `S` to its Rees matrix semigroup. -/
-noncomputable def reesEquiv (S : Type uS) [Semigroup S] [Stable S] [IsSimple S] [Nonempty S] :
+noncomputable def reesEquiv (S : Type uS) [Semigroup S] [IsStable S] [IsSimple S] [Nonempty S] :
     S ≃* ReesOf S :=
   (ReesData.ofSimple (S := S)).mulEquiv
 
 /-- **Rees–Suschkewitsch theorem**: a nonempty stable simple semigroup is isomorphic to a
 Rees matrix semigroup over a group. -/
-theorem exists_mulEquiv_rees (S : Type uS) [Semigroup S] [Stable S] [IsSimple S] [Nonempty S] :
+theorem exists_mulEquiv_rees (S : Type uS) [Semigroup S] [IsStable S] [IsSimple S] [Nonempty S] :
     ∃ (I J G : Type uS) (_ : Group G) (P : I → J → G), Nonempty (S ≃* Rees P) :=
   ⟨_, _, _, _, _, ⟨reesEquiv S⟩⟩
 

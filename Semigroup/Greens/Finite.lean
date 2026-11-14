@@ -16,7 +16,7 @@ public import Semigroup.Greens.Stable
 This file proves theorems about Green's relations in finite semigroups.
 
 ## Main theorems
-* `Semigroup.stable_of_finite` - Finite semigroups are stable.
+* `Semigroup.isStable_of_finite` - Finite semigroups are stable.
 -/
 
 public section
@@ -57,7 +57,7 @@ lemma LEquiv.of_jEquiv_mul_left (hj : x 𝓙 y * x) : x 𝓛 y * x := by
 /-! ### Stability -/
 
 /-- Finite semigroups are stable. -/
-instance stable_of_finite : Stable S where
+instance isStable_of_finite : IsStable S where
   rEquiv_of_rPreorder_of_jEquiv hr hj := by
     obtain rfl | ⟨z, rfl⟩ := hr.eq_or_exists_mul
     · rfl

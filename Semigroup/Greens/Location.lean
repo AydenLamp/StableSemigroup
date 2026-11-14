@@ -40,7 +40,7 @@ variable {S : Type*} [Semigroup S]
 
 /-- In stable semigroups, `x * y` is in the intersection of the 𝓡-class of `x` and the 𝓛-class
 of `y` iff `x`, `y`, and `x * y` are 𝓓-equivalent. -/
-theorem DEquiv.mul_mem_inter_iff (x y : S) [Stable S] :
+theorem DEquiv.mul_mem_inter_iff (x y : S) [IsStable S] :
     x * y ∈ ⟦x⟧𝓡 ∩ ⟦y⟧𝓛 ↔ x 𝓓 y ∧ x * y 𝓓 x := by
   simp only [Set.mem_inter_iff, REquiv.mem_set, LEquiv.mem_set]
   constructor
