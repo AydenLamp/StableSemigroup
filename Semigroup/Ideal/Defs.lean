@@ -4,10 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
-import Mathlib.Algebra.Group.Pointwise.Set.Basic
-import Mathlib.Algebra.GroupWithZero.Defs
-import Mathlib.Data.SetLike.Basic
-import Mathlib.Tactic.Group
+module
+
+public import Mathlib.Algebra.Group.Pointwise.Set.Basic
+public import Mathlib.Algebra.GroupWithZero.Defs
+public import Mathlib.Data.SetLike.Basic
 
 /-!
 # Ideal Structure for Semigroups
@@ -22,20 +23,18 @@ This file defines left, right, and two-sided ideals, as well as minimal ideals.
   a subset closed under both left and right multiplication.
 * `LeftIdeal.ofSet`, `RightIdeal.ofSet`, `MulTwoSidedIdeal.ofSet` —
   the smallest ideal containing a set.
-* `LeftIdeal.principal`, `RightIdeal.principal`, `MulTwoSidedIdeal.principal` — principal ideals.
 * `MulTwoSidedIdeal.IsMinimal` — an ideal is minimal if it is
   nonempty and has no proper nonempty sub-ideal.
 
 ## Notation
 - `⊤, ∅ or {} : MulTwoSidedIdeal α` refer to the full and empty ideals, respectively.
-- Given `[MulZeroClass α]`, `⊥` represents the left/right/two-sided ideal `{0}`
 
 For `p, q : MulTwoSidedIdeal α`:
 - `p ∩ q : MulTwoSidedIdeal α` denotes their intersection.
 - `p ≤ q` is notation for `(p : Set α) ⊆ (q : Set α)`
 
 ## Implementation notes
-The `SetLike` implementation is from the template in the docstring of `Mathlib.Data.Setlike.Basic`.
+The `SetLike` implementation is from the template in the docstring of `Mathlib.Data.SetLike.Basic`.
 
 For a `p : MulTwoSidedIdeal α` and `x : α`, the notation `x ∈ (p : Set α)` is preferred
 over `x ∈ p.carrier` and this is supported by tagging the `mem_carrier` lemmas with `@[simp]`.
@@ -43,12 +42,17 @@ over `x ∈ p.carrier` and this is supported by tagging the `mem_carrier` lemmas
 For principal ideals, use `MulTwoSidedIdeal.ofSet {x}`.
 -/
 
+@[expose] public section
+
 open Pointwise
+
+namespace Semigroup
 
 /-! ## Left Ideals -/
 
 /-- A left ideal of a magma is a subset closed under left multiplication. -/
 structure LeftIdeal (α : Type*) [Mul α] where
+  /-- The underlying set. -/
   carrier : Set α
   mul_mem_mem {x : α} (hin : x ∈ carrier) (y : α) : y * x ∈ carrier
 
@@ -97,6 +101,7 @@ end LeftIdeal
 
 /-- A right ideal of a magma is a subset closed under right multiplication. -/
 structure RightIdeal (α : Type*) [Mul α] where
+  /-- The underlying set. -/
   carrier : Set α
   mem_mul_mem {x : α} (hin : x ∈ carrier) (y : α) : x * y ∈ carrier
 
@@ -145,6 +150,7 @@ end RightIdeal
 
 /-- A two-sided ideal of a magma is a subset closed under both left and right multiplication. -/
 structure MulTwoSidedIdeal (α : Type*) [Mul α] where
+  /-- The underlying set. -/
   carrier : Set α
   mem_mul_mem {x : α} (hin : x ∈ carrier) (y : α) : x * y ∈ carrier
   mul_mem_mem {x : α} (hin : x ∈ carrier) (y : α) : y * x ∈ carrier
@@ -161,8 +167,6 @@ instance : Inter (MulTwoSidedIdeal α) where
     { carrier := p.carrier ∩ q.carrier
       mem_mul_mem := fun hx y => ⟨p.mem_mul_mem hx.1 y, q.mem_mul_mem hx.2 y⟩
       mul_mem_mem := fun hx y => ⟨p.mul_mem_mem hx.1 y, q.mul_mem_mem hx.2 y⟩ }
-
-@[simp] lemma inter_coe {p q : MulTwoSidedIdeal α} : ↑(p ∩ q) = ↑p ∩ ↑q := rfl
 
 instance : EmptyCollection (MulTwoSidedIdeal α) where
   emptyCollection :=
@@ -188,6 +192,9 @@ def toRightIdeal (p : MulTwoSidedIdeal α) : RightIdeal α where
 
 instance : SetLike (MulTwoSidedIdeal α) α :=
   ⟨MulTwoSidedIdeal.carrier, fun p q h => by cases p; cases q; congr⟩
+
+@[simp, norm_cast] lemma coe_inter {p q : MulTwoSidedIdeal α} :
+    ((p ∩ q : MulTwoSidedIdeal α) : Set α) = (p : Set α) ∩ q := rfl
 
 instance : PartialOrder (MulTwoSidedIdeal α) := PartialOrder.ofSetLike _ _
 
@@ -223,12 +230,12 @@ def ofSet (p : Set S) : MulTwoSidedIdeal S where
     rcases hx with ((htwo | (hleft | heq)) | hright | hin)
     · obtain ⟨a, ⟨b, _, c, hc, rfl⟩, d, _, rfl⟩ := htwo
       exact Or.inl (Or.inl ⟨b * c,
-        ⟨b, Set.mem_univ _, c, hc, rfl⟩, d * y, Set.mem_univ _, by group⟩)
+        ⟨b, Set.mem_univ _, c, hc, rfl⟩, d * y, Set.mem_univ _, by simp only [mul_assoc]⟩)
     · obtain ⟨a, _, b, hb, rfl⟩ := hleft
       exact Or.inl (Or.inl ⟨a * b, ⟨a, Set.mem_univ _, b, hb, rfl⟩, y, Set.mem_univ _, rfl⟩)
     · exact Or.inr (Or.inl ⟨x, heq, y, Set.mem_univ _, rfl⟩)
     · obtain ⟨a, ha, b, _, rfl⟩ := hright
-      exact Or.inr (Or.inl ⟨a, ha, b * y, Set.mem_univ _, by group⟩)
+      exact Or.inr (Or.inl ⟨a, ha, b * y, Set.mem_univ _, by simp only [mul_assoc]⟩)
     · exact Or.inr (Or.inl ⟨x, hin, y, Set.mem_univ _, rfl⟩)
   mul_mem_mem := by
     intros x hx y
@@ -236,12 +243,13 @@ def ofSet (p : Set S) : MulTwoSidedIdeal S where
     rcases hx with ((htwo | (hleft | heq)) | hright | hin)
     · obtain ⟨a, ⟨b, _, c, hc, rfl⟩, d, _, rfl⟩ := htwo
       exact Or.inl (Or.inl ⟨y * b * c, ⟨y * b, Set.mem_univ _, c, hc, rfl⟩,
-        d, Set.mem_univ _, by group⟩)
+        d, Set.mem_univ _, by simp only [mul_assoc]⟩)
     · obtain ⟨a, _, b, hb, rfl⟩ := hleft
-      exact Or.inl (Or.inr (Or.inl ⟨y * a, Set.mem_univ _, b, hb, by group⟩))
+      exact Or.inl (Or.inr (Or.inl ⟨y * a, Set.mem_univ _, b, hb, by simp only [mul_assoc]⟩))
     · exact Or.inl (Or.inr (Or.inl ⟨y, Set.mem_univ _, x, heq, rfl⟩))
     · obtain ⟨a, ha, b, _, rfl⟩ := hright
-      exact Or.inl (Or.inl ⟨y * a, ⟨y, Set.mem_univ _, a, ha, rfl⟩, b, Set.mem_univ _, by group⟩)
+      exact Or.inl (Or.inl ⟨y * a, ⟨y, Set.mem_univ _, a, ha, rfl⟩, b, Set.mem_univ _,
+        by simp only [mul_assoc]⟩)
     · exact Or.inl (Or.inr (Or.inl ⟨y, Set.mem_univ _, x, hin, rfl⟩))
 
 lemma ofSet_coe (p : Set S) :
@@ -275,3 +283,5 @@ def IsZeroMinimal [MulZeroClass α] (I : MulTwoSidedIdeal α) : Prop :=
       ∀ (J : MulTwoSidedIdeal α), J ≠ ∅ → J ≤ I → (J = I ∨ J.carrier = {0}) := Iff.rfl
 
 end MulTwoSidedIdeal
+
+end Semigroup

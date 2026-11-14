@@ -4,7 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
-import Semigroup.Ideal.Defs
+module
+
+public import Semigroup.Ideal.Defs
 
 /-!
 # Basic Properties of Semigroup Ideals
@@ -17,12 +19,16 @@ This file contains derived properties of semigroup ideals
 * `RightIdeal.ofSet_minimal` — `ofSet q` is the smallest right ideal containing `q`.
 * `MulTwoSidedIdeal.ofSet_minimal` — `ofSet q` is the smallest two-sided ideal containing `q`.
 * `MulTwoSidedIdeal.exists_mem_of_ne_empty` — a nonempty ideal has an element.
-* `MulTwoSidedIdeal.minimal_ideal_unique` — minimal ideals are unique.
-* `MulTwoSidedIdeal.principal_zero_eq` — the principal ideal of `0` is `{0}`.
-* `MulTwoSidedIdeal.zero_is_minimal` — `{0}` is a minimal ideal.
+* `MulTwoSidedIdeal.IsMinimal.eq` — minimal ideals are unique.
+* `MulTwoSidedIdeal.coe_ofSet_zero` — the principal ideal of `0` is `{0}`.
+* `MulTwoSidedIdeal.isMinimal_ofSet_zero` — `{0}` is a minimal ideal.
 -/
 
+public section
+
 open Pointwise
+
+namespace Semigroup
 
 namespace LeftIdeal
 
@@ -63,7 +69,7 @@ lemma exists_mem_of_ne_empty {I : MulTwoSidedIdeal α} (h : I ≠ ∅) : ∃ x, 
   exact Set.nonempty_iff_ne_empty.mpr hset
 
 /-- A semigroup has at most one minimal ideal. -/
-theorem minimal_ideal_unique (I J : MulTwoSidedIdeal α) (hI : IsMinimal I) (hJ : IsMinimal J) :
+theorem IsMinimal.eq {I J : MulTwoSidedIdeal α} (hI : IsMinimal I) (hJ : IsMinimal J) :
     I = J := by
   obtain ⟨hI_ne, hI_min⟩ := hI
   obtain ⟨hJ_ne, hJ_min⟩ := hJ
@@ -100,7 +106,7 @@ theorem ofSet_minimal {p : MulTwoSidedIdeal S} {q : Set S} (hin : q ⊆ ↑p) :
 variable {S' : Type*} [SemigroupWithZero S']
 
 /-- In a semigroup with zero, the principal ideal of `0` is `{0}`. -/
-lemma principal_zero_eq : ((ofSet {(0 : S')}) : Set S') = {0} := by
+lemma coe_ofSet_zero : ((ofSet {(0 : S')}) : Set S') = {0} := by
   ext x; simp only [Set.mem_singleton_iff]; constructor
   · intro hx
     simp only [ofSet, Set.mul_singleton, mul_zero, Set.image_univ, Set.range_const,
@@ -113,21 +119,23 @@ lemma principal_zero_eq : ((ofSet {(0 : S')}) : Set S') = {0} := by
     right; right; rfl
 
 /-- In a semigroup with zero, `{0}` (as a principal ideal) is minimal. -/
-lemma zero_is_minimal : IsMinimal (ofSet {(0 : S')}) := by
+lemma isMinimal_ofSet_zero : IsMinimal (ofSet {(0 : S')}) := by
   refine ⟨?_, ?_⟩
   · intro h
     have hset : ((ofSet {(0 : S')}) : Set S') = (∅ : Set S') :=
       congrArg (fun (I : MulTwoSidedIdeal S') => (I : Set S')) h
-    rw [principal_zero_eq] at hset
+    rw [coe_ofSet_zero] at hset
     exact Set.singleton_ne_empty _ hset
   · intro J hJ_ne hJ_le
     ext x; constructor
     · exact fun hx => hJ_le hx
     · intro hx
       have : x ∈ ((ofSet {(0 : S')}) : Set S') := hx
-      rw [principal_zero_eq, Set.mem_singleton_iff] at this; subst x
+      rw [coe_ofSet_zero, Set.mem_singleton_iff] at this; subst x
       obtain ⟨y, hy⟩ := exists_mem_of_ne_empty hJ_ne
       have h0 := J.mul_right_mem (y := 0) hy
       rwa [mul_zero] at h0
 
 end MulTwoSidedIdeal
+
+end Semigroup

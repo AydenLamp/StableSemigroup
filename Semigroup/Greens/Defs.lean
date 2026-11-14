@@ -3,7 +3,9 @@ Copyright (c) 2026 The Mathlib Contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
-import Mathlib.Algebra.Group.WithOne.Defs
+module
+
+public import Mathlib.Algebra.Group.WithOne.Defs
 
 /-!
 # Green's Relations
@@ -32,6 +34,8 @@ This file defines Green's preorders and equivalence relations on semigroups.
 * `Semigroup.DEquiv.isEquivalence` — 𝓓 is an equivalence relation.
 -/
 
+@[expose] public section
+
 namespace Semigroup
 
 variable {S : Type*} [Semigroup S]
@@ -41,6 +45,7 @@ variable {S : Type*} [Semigroup S]
 /-- `x` is 𝓡-below `y` if `x = y` or there exists a `z : S` such that `y * z = x`. -/
 def RPreorder (x y : S) : Prop := ∃ z : WithOne S , ↑y * z = ↑x
 
+/-- `x ≤𝓡 y` is Green's 𝓡-preorder. -/
 infix:50 " ≤𝓡 " => RPreorder
 
 namespace RPreorder
@@ -61,6 +66,7 @@ end RPreorder
 /-- `x` is 𝓛-below `y` if `x = y` or there exists a `z : S` such that `z * y = x`. -/
 def LPreorder (x y : S) : Prop := ∃ z : WithOne S, z * ↑y = ↑x
 
+/-- `x ≤𝓛 y` is Green's 𝓛-preorder. -/
 infix:50 " ≤𝓛 " => LPreorder
 
 namespace LPreorder
@@ -72,7 +78,7 @@ namespace LPreorder
   obtain ⟨v, hv⟩ := hyz
   exact ⟨u * v, by rw [mul_assoc, hv, hu]⟩
 
-/-- `≤𝓛` is a Preorder -/
+/-- `≤𝓛` is a preorder. -/
 instance isPreorder : IsPreorder S LPreorder where
   refl := refl
   trans := @trans _ _
@@ -82,6 +88,7 @@ end LPreorder
 /-- `x` is 𝓙-below `y` if there exists `w v : WithOne S` such that `w * ↑y * v = ↑x`. -/
 def JPreorder (x y : S) : Prop := ∃ w v : WithOne S, w * ↑y * v = ↑x
 
+/-- `x ≤𝓙 y` is Green's 𝓙-preorder. -/
 infix:50 " ≤𝓙 " => JPreorder
 
 namespace JPreorder
@@ -102,6 +109,7 @@ end JPreorder
 /-- `x` is 𝓗-below `y` if `x ≤𝓡 y` and `x ≤𝓛 y`. -/
 def HPreorder (x y : S) : Prop := x ≤𝓡 y ∧ x ≤𝓛 y
 
+/-- `x ≤𝓗 y` is Green's 𝓗-preorder. -/
 notation:50 f " ≤𝓗 " g:50 => HPreorder f g
 
 namespace HPreorder
@@ -120,7 +128,8 @@ end HPreorder
 /-! ### Green's Equivalences (except 𝓓) -/
 
 /-- The symmetric closure of a preorder is an equivalence relation. -/
-theorem _root_.IsPreorder.SymmClosure {α : Type*} (p : α → α → Prop) [h : IsPreorder α p] :
+theorem _root_.IsPreorder.equivalence_symmClosure {α : Type*} (p : α → α → Prop)
+    [h : IsPreorder α p] :
     Equivalence (fun x y ↦ p x y ∧ p y x) where
   refl x := ⟨h.refl x, h.refl x⟩
   symm := And.symm
@@ -129,19 +138,22 @@ theorem _root_.IsPreorder.SymmClosure {α : Type*} (p : α → α → Prop) [h :
 /-- Green's 𝓡 equivalence: the symmetric closure of `≤𝓡`. -/
 def REquiv (x y : S) : Prop := x ≤𝓡 y ∧ y ≤𝓡 x
 
+/-- `x 𝓡 y` is Green's 𝓡-equivalence. -/
 notation :50 x " 𝓡 " y:50 => REquiv x y
 
 namespace REquiv
 
 theorem isEquivalence : Equivalence (fun x y : S ↦ x 𝓡 y) :=
-  IsPreorder.SymmClosure (fun x y : S ↦ x ≤𝓡 y)
+  IsPreorder.equivalence_symmClosure (fun x y : S ↦ x ≤𝓡 y)
 
 @[simp, refl] lemma refl (x : S) : x 𝓡 x := REquiv.isEquivalence.refl x
 @[symm] lemma symm {x y : S} (h : x 𝓡 y) : y 𝓡 x := REquiv.isEquivalence.symm h
 @[trans] lemma trans {x y z : S} (h₁ : x 𝓡 y) (h₂ : y 𝓡 z) : x 𝓡 z :=
   REquiv.isEquivalence.trans h₁ h₂
 
+/-- The 𝓡-class of `x`. -/
 def set (x : S) : Set (S) := {y | y 𝓡 x}
+/-- `⟦x⟧𝓡` is the 𝓡-class of `x`. -/
 notation "⟦" x "⟧𝓡" => set x
 lemma set_def (x : S) : ⟦x⟧𝓡 = {y | y 𝓡 x} := rfl
 lemma set_refl (x : S) : x ∈ ⟦x⟧𝓡 := refl x
@@ -152,18 +164,21 @@ end REquiv
 /-- Green's 𝓛 equivalence: the symmetric closure of `≤𝓛`. -/
 def LEquiv (x y : S) : Prop := x ≤𝓛 y ∧ y ≤𝓛 x
 
+/-- `x 𝓛 y` is Green's 𝓛-equivalence. -/
 notation :50 x " 𝓛 " y:50 => LEquiv x y
 
 namespace LEquiv
 
 theorem isEquivalence : Equivalence (fun x y : S ↦ x 𝓛 y) :=
-  IsPreorder.SymmClosure (fun x y : S ↦ x ≤𝓛 y)
+  IsPreorder.equivalence_symmClosure (fun x y : S ↦ x ≤𝓛 y)
 
 @[simp, refl] lemma refl (x : S) : x 𝓛 x := isEquivalence.refl x
 @[symm] lemma symm {x y : S} (h : x 𝓛 y) : y 𝓛 x := isEquivalence.symm h
 @[trans] lemma trans {x y z : S} (h₁ : x 𝓛 y) (h₂ : y 𝓛 z) : x 𝓛 z := isEquivalence.trans h₁ h₂
 
+/-- The 𝓛-class of `x`. -/
 def set (x : S) : Set (S) := {y | y 𝓛 x}
+/-- `⟦x⟧𝓛` is the 𝓛-class of `x`. -/
 notation "⟦" x "⟧𝓛" => set x
 lemma set_def (x : S) : ⟦x⟧𝓛 = {y | y 𝓛 x} := rfl
 lemma set_refl (x : S) : x ∈ ⟦x⟧𝓛 := refl x
@@ -174,18 +189,21 @@ end LEquiv
 /-- Green's 𝓙 equivalence: the symmetric closure of `≤𝓙`. -/
 def JEquiv (x y : S) : Prop := x ≤𝓙 y ∧ y ≤𝓙 x
 
+/-- `x 𝓙 y` is Green's 𝓙-equivalence. -/
 notation :50 x " 𝓙 " y:50 => JEquiv x y
 
 namespace JEquiv
 
 theorem isEquivalence : Equivalence (fun x y : S ↦ x 𝓙 y) :=
-  IsPreorder.SymmClosure (fun x y : S ↦ x ≤𝓙 y)
+  IsPreorder.equivalence_symmClosure (fun x y : S ↦ x ≤𝓙 y)
 
 @[simp, refl] lemma refl (x : S) : x 𝓙 x := isEquivalence.refl x
 @[symm] lemma symm {x y : S} (h : x 𝓙 y) : y 𝓙 x := isEquivalence.symm h
 @[trans] lemma trans {x y z : S} (h₁ : x 𝓙 y) (h₂ : y 𝓙 z) : x 𝓙 z := isEquivalence.trans h₁ h₂
 
+/-- The 𝓙-class of `x`. -/
 def set (x : S) : Set (S) := {y | y 𝓙 x}
+/-- `⟦x⟧𝓙` is the 𝓙-class of `x`. -/
 notation "⟦" x "⟧𝓙" => set x
 lemma set_def (x : S) : ⟦x⟧𝓙 = {y | y 𝓙 x} := rfl
 lemma set_refl (x : S) : x ∈ ⟦x⟧𝓙 := JEquiv.refl x
@@ -196,18 +214,21 @@ end JEquiv
 /-- Green's 𝓗 equivalence: the symmetric closure of `≤𝓗`. -/
 def HEquiv (x y : S) : Prop := x ≤𝓗 y ∧ y ≤𝓗 x
 
+/-- `x 𝓗 y` is Green's 𝓗-equivalence. -/
 notation :50 x " 𝓗 " y:50 => HEquiv x y
 
 namespace HEquiv
 
 theorem isEquivalence : Equivalence (fun x y : S ↦ x 𝓗 y) :=
-  IsPreorder.SymmClosure (fun x y : S ↦ x ≤𝓗 y)
+  IsPreorder.equivalence_symmClosure (fun x y : S ↦ x ≤𝓗 y)
 
 @[simp, refl] lemma refl (x : S) : x 𝓗 x := isEquivalence.refl x
 @[symm] lemma symm {x y : S} (h : x 𝓗 y) : y 𝓗 x := isEquivalence.symm h
 @[trans] lemma trans {x y z : S} (h₁ : x 𝓗 y) (h₂ : y 𝓗 z) : x 𝓗 z := isEquivalence.trans h₁ h₂
 
+/-- The 𝓗-class of `x`. -/
 def set (x : S) : Set (S) := {y | y 𝓗 x}
+/-- `⟦x⟧𝓗` is the 𝓗-class of `x`. -/
 notation "⟦" x "⟧𝓗" => set x
 lemma set_def (x : S) : ⟦x⟧𝓗 = {y | y 𝓗 x} := rfl
 lemma set_refl (x : S) : x ∈ ⟦x⟧𝓗 := HEquiv.refl x
@@ -273,6 +294,7 @@ theorem rEquiv_lEquiv_comm (x y : S) : (∃ z, x 𝓡 z ∧ z 𝓛 y) ↔ (∃ z
 /-- Green's 𝓓 equivalence: the composition of 𝓡 and 𝓛. -/
 def DEquiv : S → S → Prop := fun x y => ∃ z, x 𝓡 z ∧ z 𝓛 y
 
+/-- `x 𝓓 y` is Green's 𝓓-equivalence. -/
 infix:50 " 𝓓 " => DEquiv
 
 namespace DEquiv
@@ -284,22 +306,24 @@ namespace DEquiv
   rw [DEquiv, rEquiv_lEquiv_comm]
   exact ⟨z, hz₂.symm, hz₁.symm⟩
 
-lemma closed_under_lEquiv {x y z : S} (hd : x 𝓓 y) (hl : y 𝓛 z) : x 𝓓 z :=
+lemma trans_lEquiv {x y z : S} (hd : x 𝓓 y) (hl : y 𝓛 z) : x 𝓓 z :=
   let ⟨w, hw₁, hw₂⟩ := hd
   ⟨w, hw₁, hw₂.trans hl⟩
 
-lemma closed_under_rEquiv {x y z : S} (hd : x 𝓓 y) (hl : y 𝓡 z) : x 𝓓 z := by
+lemma trans_rEquiv {x y z : S} (hd : x 𝓓 y) (hl : y 𝓡 z) : x 𝓓 z := by
   obtain ⟨w, hw₁, hw₂⟩ := hd.symm
   exact (show z 𝓓 x from ⟨w, hl.symm.trans hw₁, hw₂⟩).symm
 
 @[trans] lemma trans {x y z : S} (h₁ : x 𝓓 y) (h₂ : y 𝓓 z) : x 𝓓 z := by
   obtain ⟨w, hw₁, hw₂⟩ := h₂
-  exact (h₁.closed_under_rEquiv hw₁).closed_under_lEquiv hw₂
+  exact (h₁.trans_rEquiv hw₁).trans_lEquiv hw₂
 
 theorem isEquivalence : Equivalence (fun x y : S => x 𝓓 y) where
   refl := refl; symm := symm; trans := trans
 
+/-- The 𝓓-class of `x`. -/
 def set (x : S) : Set (S) := {y | y 𝓓 x}
+/-- `⟦x⟧𝓓` is the 𝓓-class of `x`. -/
 notation "⟦" x "⟧𝓓" => set x
 lemma set_def (x : S) : ⟦x⟧𝓓 = {y | y 𝓓 x} := rfl
 lemma set_refl (x : S) : x ∈ ⟦x⟧𝓓 := DEquiv.refl x

@@ -3,9 +3,11 @@ Copyright (c) 2026 The Mathlib Contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
-import Semigroup.Greens.Defs
-import Mathlib.Algebra.Group.Idempotent
-import Mathlib.Algebra.Group.WithOne.Basic
+module
+
+public import Semigroup.Greens.Defs
+public import Mathlib.Algebra.Group.Idempotent
+public import Mathlib.Algebra.Group.WithOne.Basic
 
 /-!
 # Basic Properties of Green's Relations
@@ -31,6 +33,8 @@ Given `hr : x 𝓡 y` and a goal `x 𝓙 y`, `simp [hr]` or `simp_all` suffices.
 
 **Morphism preservation** for all Green's relations and preorders.
 -/
+
+public section
 
 namespace Semigroup
 

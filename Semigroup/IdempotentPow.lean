@@ -6,42 +6,28 @@ Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 module
 
 public import Mathlib.Algebra.Group.Idempotent
-public import Mathlib.Algebra.Group.PNatPowAssoc
-public import Mathlib.Data.Fintype.Pigeonhole
-public import Mathlib.Logic.Denumerable
-public import Mathlib.Tactic.PNatToNat
-public import Mathlib.Tactic.Ring.RingNF
+public import Semigroup.ForMathlib.PNatPowAssoc
+public import Mathlib.Data.Finite.Defs
+import Mathlib.Data.Fintype.Pigeonhole
+import Mathlib.Logic.Denumerable
+import Mathlib.Tactic.PNatToNat
+import Mathlib.Tactic.Ring.RingNF
 
 /-!
 # Idempotent Elements in Finite Semigroups
 
-This file defines properties related to idempotent elements in finite semigroups and monoids.
+This file proves the existence of idempotent powers in finite semigroups and monoids.
 
 ## Main theorems
 
 * `Semigroup.exists_idempotent_ppow` - In finite semigroups,
   `∀ x, ∃ (m : ℕ+), IsIdempotentElem (x ^ m)`
 * `Monoid.exists_idempotent_pow` - `∃ (n : ℕ), IsIdempotentElem (x ^ n) ∧ n ≠ 0` in finite monoids.
-* `Monoid.exists_pow_sandwich_eq_self` - In finite monoids, if `a = x * a * y`, then there exists
+* `Monoid.exists_pow_sandwich_eq_self` - In finite monoids, if `a = x * a * y`, then there exist
  positive powers `n₁` and `n₂` such that `x ^ n₁ * a = a` and `a * y ^ n₂ = a`.
 -/
 
 public section
-
-/- This section has lemmas that are added to PNatPowAssoc.lean in the PR. -/
-section PNatPowAssoc
-
-variable [Mul M] [Pow M ℕ+] [PNatPowAssoc M]
-
-theorem ppow_succ (x : M) (n : ℕ+) : x ^ (n + 1) = x ^ n * x := by
-  nth_rw 3 [← ppow_one x]
-  rw [ppow_add]
-
-theorem ppow_succ' (x : M) (n : ℕ+) : x ^ (n + 1) = x * x ^ n := by
-  nth_rw 2 [← ppow_one x]
-  rw [← ppow_add, add_comm]
-
-end PNatPowAssoc
 
 namespace Semigroup
 
@@ -119,13 +105,6 @@ namespace Monoid
 
 variable {M : Type*} [Monoid M]
 
-/-- Idempotent elements are stable under positive powers in monoids. -/
-lemma pow_succ_eq {x : M} {n : ℕ} (h_idem : IsIdempotentElem x) :
-    x ^ (n + 1) = x := by
-  induction n with
-  | zero => rw [zero_add, pow_one]
-  | succ n' ih => rw [pow_succ, ih, h_idem]
-
 /-- Every element in a finite monoid has a nonzero idempotent power. -/
 theorem exists_idempotent_pow [Finite M] (x : M) :
     ∃ (n : ℕ), IsIdempotentElem (x ^ n) ∧ n ≠ 0 := by
@@ -135,8 +114,8 @@ theorem exists_idempotent_pow [Finite M] (x : M) :
   obtain ⟨m, hm⟩ := Semigroup.exists_idempotent_ppow x
   exact ⟨m, hm, m.ne_zero⟩
 
-/-- In finite monoids, if `x * a * y = a`, then `x` has a positive power that left-cancels,
-and `y` has a positive power that right-cancels. -/
+/-- In finite monoids, if `x * a * y = a`, then some positive powers of `x` and `y` fix `a`:
+`x ^ n₁ * a = a` and `a * y ^ n₂ = a`. -/
 theorem exists_pow_sandwich_eq_self [Finite M] {x a y : M} (h : x * a * y = a) :
     ∃ n₁ n₂ : ℕ, n₁ ≠ 0 ∧ n₂ ≠ 0 ∧ x ^ n₁ * a = a ∧ a * y ^ n₂ = a := by
   have loop : ∀ k : ℕ, x ^ k * a * y ^ k = a := by

@@ -4,11 +4,13 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
-import Semigroup.ReesMatrix.Defs
-import Semigroup.ReesMatrix.Simple
-import Semigroup.Greens.Location
-import Semigroup.Greens.Finite
-import Semigroup.Ideal.Basic
+module
+
+public import Semigroup.ReesMatrix.Defs
+public import Semigroup.Simple
+public import Semigroup.Greens.HClassGroup
+public import Semigroup.Greens.Finite
+public import Semigroup.Ideal.Basic
 
 /-!
 # Rees–Suschkewitsch Theorem (0-Simple Case)
@@ -18,10 +20,12 @@ This file proves the backward direction of the Rees–Suschkewitsch theorem for
 
 ## Main Results
 
-* `Semigroup.ReesZero.instIsZeroSimple` — a regular Rees matrix semigroup
+* `Semigroup.ReesZero.isZeroSimple` — a regular Rees matrix semigroup
   with zero is 0-simple (backward direction).
 * `Semigroup.zero_simple_implies_reesZero` — the forward direction.
 -/
+
+public section
 
 namespace Semigroup
 
@@ -36,7 +40,7 @@ variable {I : Type*} {J : Type*} {G : Type*} [Group G]
 /-- **Rees–Suschkewitsch Theorem for 0-simple semigroups (backward direction).**
 A regular Rees matrix semigroup with zero is 0-simple: for any nonzero elements
 `x, y`, there exist `s, t` such that `s * x * t = y`. -/
-instance ReesZero.instIsZeroSimple
+theorem ReesZero.isZeroSimple
     (P : I → J → WithZero G)
     [Nonempty I] [Nonempty J]
     (hrow : ∀ i : I, ∃ j : J, P i j ≠ 0)

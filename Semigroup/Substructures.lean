@@ -3,9 +3,11 @@ Copyright (c) 2026 The Mathlib Contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
-import Mathlib.Algebra.Group.Basic
-import Mathlib.Algebra.Group.Equiv.Defs
-import Mathlib.Data.SetLike.Basic
+module
+
+public import Mathlib.Algebra.Group.Basic
+public import Mathlib.Algebra.Group.Equiv.Defs
+public import Mathlib.Data.SetLike.Basic
 
 /-!
 # Substructures for semigroups, monoids, and groups (without identity axiom)
@@ -21,11 +23,13 @@ Along with `SetLike` instances, partial orders, and basic API for each structure
 - `≤` : subset ordering on `Subsemigroup/Submonoid/Subgroup` via `SetLike`
 
 ## Implementation notes
-The `SetLike` implementation follows the template in the docstring of `Mathlib.Data.Setlike.Basic`.
+The `SetLike` implementation follows the template in the docstring of `Mathlib.Data.SetLike.Basic`.
 The `Submonoid` and `Subgroup` structures carry their *own* `one` and `inv` rather than
 depending on a `Monoid / Group` instance on `S`, making them suitable for semigroup
 theory where the ambient type has no global identity.
 -/
+
+@[expose] public section
 
 namespace Semigroup
 
@@ -35,6 +39,7 @@ variable {S : Type*} [Semigroup S]
 
 /-- A subsemigroup of a semigroup is a subset closed under multiplication. -/
 structure Subsemigroup (S : Type*) [Semigroup S] where
+  /-- The underlying set. -/
   carrier : Set S
   mul_mem {x y : S} (hx : x ∈ carrier) (hy : y ∈ carrier) : x * y ∈ carrier
 
@@ -74,6 +79,7 @@ end Subsemigroup
 
 /-- A submonoid of a semigroup, carrying its own identity element. -/
 structure Submonoid (S : Type*) [Semigroup S] extends Subsemigroup S where
+  /-- The identity element of the submonoid (need not be an identity of `S`). -/
   one : S
   one_mem : one ∈ carrier
   one_mul {x : S} (hx : x ∈ carrier) : one * x = x
@@ -140,6 +146,7 @@ end Submonoid
 closure under multiplication. This models "maximal subgroup" without requiring a Group
 instance on the ambient type. -/
 structure Subgroup (S : Type*) [Semigroup S] extends Submonoid S where
+  /-- The inverse map; it is the identity outside the carrier. -/
   inv : S → S
   inv_not_mem {x : S} (hx : x ∉ carrier) : inv x = x
   inv_mem {x : S} (hx : x ∈ carrier) : inv x ∈ carrier
@@ -242,21 +249,15 @@ lemma bijOn_toEquiv {H K : Subgroup S} (f : S → S) (hbij : Set.BijOn f H.carri
 
 /-- Given a bijection between two subgroups that preserves multiplication,
 construct an isomorphism. -/
-noncomputable def hom_of_bijOn {H K : Subgroup S}
-  (f : S → S)
-  (hbij : Set.BijOn f H.carrier K.carrier)
-  (hpres : ∀ (x y : S), x ∈ H → y ∈ H → f (x * y) = f x * f y)
-  : H ≃* K := by
+noncomputable def mulEquivOfBijOn {H K : Subgroup S} (f : S → S)
+    (hbij : Set.BijOn f H.carrier K.carrier)
+    (hpres : ∀ (x y : S), x ∈ H → y ∈ H → f (x * y) = f x * f y) : H ≃* K :=
   have hbije := bijOn_toEquiv f hbij
-  exact {
-    toFun := fun x => ⟨f x.val, hbij.1 x.prop⟩
+  { toFun := fun x => ⟨f x.val, hbij.1 x.prop⟩
     invFun := Function.surjInv hbije.surjective
     left_inv := Function.leftInverse_surjInv hbije
     right_inv := Function.rightInverse_surjInv hbije.surjective
-    map_mul' := by
-      rintro ⟨a, ha⟩ ⟨b, hb⟩
-      exact Subtype.ext (hpres a b ha hb)
-  }
+    map_mul' := fun ⟨a, ha⟩ ⟨b, hb⟩ => Subtype.ext (hpres a b ha hb) }
 
 end Subgroup
 

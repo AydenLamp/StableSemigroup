@@ -4,10 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
-import Semigroup.ReesMatrix.Defs
-import Semigroup.ReesMatrix.Simple
-import Semigroup.Greens.Location
-import Semigroup.SemigroupIdempotentPow
+module
+
+public import Semigroup.ReesMatrix.Defs
+public import Semigroup.Simple
+public import Semigroup.Greens.HClassGroup
+public import Semigroup.IdempotentPow
 
 /-!
 # Rees–Suschkewitsch Theorem (Simple Case)
@@ -34,8 +36,10 @@ and conversely every Rees matrix semigroup over a group is simple.
 * `Semigroup.ReesData.decomp` — every element decomposes as `s i * g * r j`.
 * `Semigroup.ReesData.unique` — the decomposition is unique.
 * `Semigroup.ReesData.mulEquiv` — the multiplicative equivalence `S ≃* Rees C.sandwich`.
-* `Semigroup.Rees.isSimple` — every Rees matrix semigroup (without zero) is simple.
+* `Semigroup.Rees.instIsSimple` — every Rees matrix semigroup (without zero) is simple.
 -/
+
+@[expose] public section
 
 namespace Semigroup
 
@@ -55,6 +59,7 @@ abbrev LQuot (S : Type*) [Semigroup S] : Type _ :=
 
 /-- A Rees coordinate system for a semigroup `S` -/
 structure ReesData (S : Type*) [Semigroup S] where
+  /-- The chosen idempotent, whose 𝓗-class is the structure group. -/
   e : S
   /-- Proof that `e` is idempotent. -/
   he : IsIdempotentElem e
@@ -82,7 +87,7 @@ abbrev HClass : Type uS := {x : S // x ∈ ⟦C.e⟧𝓗}
 
 /-- The group structure on the 𝓗-class of the anchor idempotent. -/
 noncomputable instance instGroupHClass : Group C.HClass :=
-  HEquiv.group_of_idempotent' C.he
+  HEquiv.groupOfIdempotent C.he
 
 /-- 𝓡-class representatives are left-absorbed by `e`: `s i * e = s i`. -/
 theorem s_mul_e (i : RQuot S) : C.s i * C.e = C.s i :=
@@ -92,18 +97,18 @@ theorem s_mul_e (i : RQuot S) : C.s i * C.e = C.s i :=
 theorem e_mul_r (j : LQuot S) : C.e * C.r j = C.r j :=
   (RPreorder.le_idempotent C.he _).mp (C.hrR j).1
 
-variable [Finite S] [IsSimple S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)]
+variable [Finite S] [IsSimple S]
 
 /-- The sandwich matrix: `P(i,j) = r j * s i`, which lies in the 𝓗-class of `e`. -/
 noncomputable def sandwich : RQuot S → LQuot S → C.HClass := fun i j =>
   ⟨C.r j * C.s i, by
-    simp only [HEquiv.set_def, Set.mem_setOf_eq]
+    simp only [HEquiv.set_def, Set.mem_ofPred_eq]
     rw [HEquiv.iff_rEquiv_and_lEquiv]
     constructor
-    · refine REquiv.of_rPreorder_and_jEquiv ?_ (JEquiv.ofSimple ..)
+    · refine REquiv.of_rPreorder_of_jEquiv ?_ (JEquiv.of_isSimple ..)
       use ↑(C.r j * C.s i)
       simp[← mul_assoc, ← WithOne.coe_mul, e_mul_r]
-    · refine LEquiv.of_lPreorder_and_jEquiv ?_ (JEquiv.ofSimple ..)
+    · refine LEquiv.of_lPreorder_of_jEquiv ?_ (JEquiv.of_isSimple ..)
       use ↑(C.r j * C.s i)
       simp[← WithOne.coe_mul, mul_assoc, s_mul_e]⟩
 
@@ -112,7 +117,7 @@ noncomputable def sandwich : RQuot S → LQuot S → C.HClass := fun i j =>
 
 /-! ### Decomposition -/
 
-omit [Finite S] [IsSimple S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)] in
+omit [Finite S] [IsSimple S] in
 /-- Every element of `S` decomposes as `s i * g * r j` for some `i, j, g`. -/
 theorem decomp (x : S) :
     ∃ (i : RQuot S) (j : LQuot S) (g : C.HClass), x = C.s i * ↑g * C.r j := by
@@ -121,7 +126,7 @@ theorem decomp (x : S) :
   use Quotient.mk rS x, Quotient.mk lS x
   have hsiR : C.s ⟦x⟧ 𝓡 x := Quotient.exact (C.hsQ _)
   have hrjL : C.r ⟦x⟧ 𝓛 x := Quotient.exact (C.hrQ _)
-  have hmem := (mul_in_inter_iff_exists_idempotent (C.s ⟦x⟧) (C.r ⟦x⟧)).mpr
+  have hmem := (mul_mem_inter_iff_exists_isIdempotentElem (C.s ⟦x⟧) (C.r ⟦x⟧)).mpr
       ⟨C.e, C.he, (C.hrR _).symm, (C.hsL _).symm⟩
   have hH : C.s ⟦x⟧ * C.r ⟦x⟧ 𝓗 x :=
     (HEquiv.iff_rEquiv_and_lEquiv _ _).mpr ⟨hmem.1.trans hsiR, hmem.2.trans hrjL⟩
@@ -145,21 +150,21 @@ theorem unique (x : S) (i i' : RQuot S) (j j' : LQuot S) (g g' : C.HClass)
   have hi : i = i' := by
     have h_xRsi : x 𝓡 C.s i := by
       rw [hx]
-      refine REquiv.of_rPreorder_and_jEquiv ?_ (JEquiv.ofSimple ..)
+      refine REquiv.of_rPreorder_of_jEquiv ?_ (JEquiv.of_isSimple ..)
       simp [mul_assoc]
     have h_xRsi' : x 𝓡 C.s i' := by
       rw [hx']
-      refine REquiv.of_rPreorder_and_jEquiv ?_ (JEquiv.ofSimple ..)
+      refine REquiv.of_rPreorder_of_jEquiv ?_ (JEquiv.of_isSimple ..)
       simp [mul_assoc]
     rw [← C.hsQ i, ← C.hsQ i']
     exact Quotient.sound (h_xRsi.symm.trans h_xRsi')
   have hj : j = j' := by
     have h_xLrj : x 𝓛 C.r j := by
       rw [hx]
-      exact LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self (JEquiv.ofSimple ..)
+      exact LEquiv.of_lPreorder_of_jEquiv LPreorder.mul_left_self (JEquiv.of_isSimple ..)
     have h_xLrj' : x 𝓛 C.r j' := by
       rw [hx']
-      exact LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self (JEquiv.ofSimple ..)
+      exact LEquiv.of_lPreorder_of_jEquiv LPreorder.mul_left_self (JEquiv.of_isSimple ..)
     rw [← C.hrQ j, ← C.hrQ j']
     exact Quotient.sound (h_xLrj.symm.trans h_xLrj')
   refine ⟨hi, hj, ?_⟩
@@ -167,10 +172,10 @@ theorem unique (x : S) (i i' : RQuot S) (j j' : LQuot S) (g g' : C.HClass)
   have inj := LEquiv.injOn_hClass (C.hsL i).symm (C.s_mul_e i) g.prop g'.prop
   simp only at inj
   apply inj
-  have h_sir_Rsi := ((mul_in_inter_iff_exists_idempotent (C.s i) (C.r j)).2
+  have h_sir_Rsi := ((mul_mem_inter_iff_exists_isIdempotentElem (C.s i) (C.r j)).2
     ⟨C.e, C.he, (C.hrR j).symm, (C.hsL i).symm⟩).1.symm
   have mk_h_mem (g₀ : C.HClass) : C.s i * ↑g₀ ∈ ⟦C.s i⟧𝓗 := by
-    have h := (mul_in_inter_iff_exists_idempotent (C.s i) (↑g₀)).2
+    have h := (mul_mem_inter_iff_exists_isIdempotentElem (C.s i) (↑g₀)).2
       ⟨C.e, C.he, g₀.prop.to_rEquiv.symm, (C.hsL i).symm⟩
     exact (HEquiv.iff_rEquiv_and_lEquiv _ _).2
       ⟨h.1, h.2.trans (g₀.prop.to_lEquiv.trans (C.hsL i).symm)⟩
@@ -190,7 +195,7 @@ noncomputable def toRees (x : S) : Rees C.sandwich :=
 noncomputable def fromRees (z : Rees C.sandwich) : S :=
   C.s z.i * ↑z.g * C.r z.j
 
-private theorem toRees_spec (x : S) :
+theorem toRees_spec (x : S) :
     x = C.s (C.toRees x).i * ↑(C.toRees x).g * C.r (C.toRees x).j :=
   (C.decomp x).choose_spec.choose_spec.choose_spec
 
@@ -230,12 +235,12 @@ noncomputable def ofSimple [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] : ReesDat
   let h_r : ∀ j : LQuot S, ∃ z : S, z 𝓡 e ∧
       @Quotient.mk S ⟨(· 𝓛 ·), LEquiv.isEquivalence⟩ z = j := fun j => by
     obtain ⟨y, rfl⟩ := Quotient.exists_rep j
-    obtain ⟨z, hzR, hzL⟩ : e 𝓓 y := DEquiv.ofSimple e y
+    obtain ⟨z, hzR, hzL⟩ : e 𝓓 y := DEquiv.of_isSimple e y
     exact ⟨z, REquiv.symm hzR, Quotient.sound hzL⟩
   let h_s : ∀ i : RQuot S, ∃ z : S, z 𝓛 e ∧
       @Quotient.mk S ⟨(· 𝓡 ·), REquiv.isEquivalence⟩ z = i := fun i => by
     obtain ⟨y, rfl⟩ := Quotient.exists_rep i
-    obtain ⟨z, hzR, hzL⟩ : y 𝓓 e := DEquiv.ofSimple y e
+    obtain ⟨z, hzR, hzL⟩ : y 𝓓 e := DEquiv.of_isSimple y e
     exact ⟨z, hzL, Quotient.sound hzR.symm⟩
   { e := e
     he := he
@@ -256,13 +261,13 @@ open Semigroup
 
 /-- The Rees matrix semigroup type that is isomorphic to a finite simple semigroup `S`. -/
 noncomputable abbrev reesOf (S : Type uS) [Finite S] [Semigroup S] [IsSimple S]
-  [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)] :
+  [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] :
     Type uS :=
   Rees (ReesData.ofSimple (S := S)).sandwich
 
 /-- The explicit multiplicative equivalence from `S` to its Rees matrix semigroup. -/
 noncomputable def reesEquiv (S : Type uS) [Finite S] [Semigroup S] [IsSimple S]
-  [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)] :
+  [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] :
     S ≃* reesOf S :=
   (ReesData.ofSimple (S := S)).mulEquiv
 
@@ -278,18 +283,18 @@ variable {I : Type*} {J : Type*} {G : Type*} [Group G] (P : I → J → G)
 
 /-- Every Rees matrix semigroup (without zero) over a group is simple:
 for any element `a`, the two-sided ideal generated by `a` is the whole semigroup. -/
-theorem Rees.isSimple [Nonempty I] [Nonempty J] :
+theorem Rees.exists_mul_mul_eq :
     ∀ (x y : Rees P), ∃ (s t : Rees P), s * x * t = y := by
   intro ⟨ix, jx, gx⟩ ⟨iy, jy, gy⟩
   exact ⟨⟨iy, jx, gy * (P ix jx)⁻¹ * gx⁻¹ * (P ix jx)⁻¹⟩, ⟨ix, jy, 1⟩, by simp [Rees.mul_def]⟩
 
 /-- A Rees matrix semigroup is simple in the ideal-theoretic sense:
 every two-sided ideal is either empty or the whole semigroup. -/
-instance Rees.instIsSimple [Nonempty I] [Nonempty J] :
+instance Rees.instIsSimple :
     IsSimple (Rees P) where
   j_total := by
     intro x y
-    obtain ⟨s, t, hst⟩ := Rees.isSimple P y x
+    obtain ⟨s, t, hst⟩ := Rees.exists_mul_mul_eq P y x
     exact ⟨↑s, ↑t, by simp [← WithOne.coe_mul, hst]⟩
 
 end ReesIsSimple

@@ -1,4 +1,5 @@
 import Semigroup
+import Semigroup.ReesMatrix.ReesSimple
 import Batteries.Tactic.Lint
 
-#lint only simpNF simpComm in Semigroup
+#lint in Semigroup

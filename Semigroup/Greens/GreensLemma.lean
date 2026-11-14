@@ -4,8 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
-import Mathlib.Data.Set.Function
-import Semigroup.Greens.Basic
+module
+
+public import Mathlib.Data.Set.Function
+public import Semigroup.Greens.Basic
 
 /-!
 # Green's Lemma
@@ -18,7 +20,7 @@ Let `x 𝓡 y` such that `y * u = x` and `x * v = y`.
 * `REquiv.invOn_lClass` - the map `x ↦ x * u` is the inverse of `x ↦ x * v` on the 𝓛-class of `x`.
 * `REquiv.bijOn_lClass` - the map `x ↦ x * v` is a bijection from the
 𝓛-class of `x` to the 𝓛-class of `y`.
-* `REquiv.bijOn_lClass_pres_hClass` - this bijection preserves 𝓗 classes.
+* `REquiv.hEquiv_mul_right_iff` - this bijection preserves 𝓗 classes.
 
 Let `x 𝓛 y` such that `u * y = x` and `v * x = y`.
 * `LEquiv.invOn_rClass` - the map `x ↦ u * x` is the inverse of `x ↦ v * x` on the 𝓡-class of `x`.
@@ -31,6 +33,8 @@ All set-theoretic statements (`InjOn`, `SurjOn`, `BijOn`) are derived from the
 inverse-pair statements `invOn_*` using Mathlib's `Set.InvOn` API, so the only
 semigroup computation is in `translation_id`.
 -/
+
+public section
 
 namespace Semigroup
 
@@ -84,21 +88,21 @@ theorem REquiv.bijOn_lClass (hr : x 𝓡 y) (hv : x * v = y) :
     Set.BijOn (fun w ↦ w * v) ⟦x⟧𝓛 ⟦y⟧𝓛 :=
   Set.BijOn.mk (RPreorder.mapsTo_lClass hv) (hr.injOn_lClass hv) (hr.surjOn_lClass hv)
 
-theorem REquiv.exists_bij_on_lClass (hr : x 𝓡 y) : ∃ f : S → S, Set.BijOn f ⟦x⟧𝓛 ⟦y⟧𝓛 := by
+theorem REquiv.exists_bijOn_lClass (hr : x 𝓡 y) : ∃ f : S → S, Set.BijOn f ⟦x⟧𝓛 ⟦y⟧𝓛 := by
   obtain rfl | ⟨v, hv⟩ := hr.ge.eq_or_exists_mul
   exacts [⟨id, Set.bijOn_id _⟩, ⟨_, hr.bijOn_lClass hv⟩]
 
 /-- If `x 𝓡 y` such that `x * v = y`, then for all `z 𝓛 x`, `z 𝓡 z * v`. -/
-lemma REquiv.bijOn_lClass_rEquiv (hr : x 𝓡 y) (hv : x * v = y) {z : S} (hz : z 𝓛 x) :
+lemma REquiv.rEquiv_mul_right_of_lEquiv (hr : x 𝓡 y) (hv : x * v = y) {z : S} (hz : z 𝓛 x) :
     z 𝓡 z * v := by
   obtain ⟨u, hu⟩ := hr.exists_inverse_translation hv
   exact ⟨⟨u, by rw [← WithOne.coe_mul, translation_id hv hu hz]⟩, RPreorder.mul_right_self⟩
 
 /-- If `x 𝓡 y` such that `x * v = y`, then the map `w ↦ w * v` preserves 𝓗-classes. -/
-lemma REquiv.bijOn_lClass_pres_hClass (hr : x 𝓡 y) (hv : x * v = y) {a b : S} (hw : a 𝓛 x)
+lemma REquiv.hEquiv_mul_right_iff (hr : x 𝓡 y) (hv : x * v = y) {a b : S} (hw : a 𝓛 x)
     (hz : b 𝓛 x) : a 𝓗 b ↔ (fun w ↦ w * v) a 𝓗 (fun w ↦ w * v) b := by
-  have ha := hr.bijOn_lClass_rEquiv hv hw
-  have hb := hr.bijOn_lClass_rEquiv hv hz
+  have ha := hr.rEquiv_mul_right_of_lEquiv hv hw
+  have hb := hr.rEquiv_mul_right_of_lEquiv hv hz
   simp only [HEquiv.iff_rEquiv_and_lEquiv]
   exact ⟨fun ⟨hab, _⟩ ↦ ⟨ha.symm.trans (hab.trans hb), (hw.trans hz.symm).rmul_compat v⟩,
     fun ⟨hab, _⟩ ↦ ⟨ha.trans (hab.trans hb.symm), hw.trans hz.symm⟩⟩
@@ -110,7 +114,7 @@ lemma REquiv.mapsTo_hClass (hr : x 𝓡 y) (hv : x * v = y) :
   intro z hz
   obtain ⟨hzr, hzl⟩ := (HEquiv.iff_rEquiv_and_lEquiv _ _).1 hz
   refine (HEquiv.iff_rEquiv_and_lEquiv _ _).2 ⟨?_, ?_⟩
-  · exact (hr.bijOn_lClass_rEquiv hv hzl).symm.trans (hzr.trans hr)
+  · exact (hr.rEquiv_mul_right_of_lEquiv hv hzl).symm.trans (hzr.trans hr)
   · rw [← hv]
     exact hzl.rmul_compat v
 
@@ -134,7 +138,7 @@ theorem REquiv.bijOn_hClass (hr : x 𝓡 y) (hv : x * v = y) :
     Set.BijOn (fun w ↦ w * v) ⟦x⟧𝓗 ⟦y⟧𝓗 :=
   Set.BijOn.mk (hr.mapsTo_hClass hv) (hr.injOn_hClass hv) (hr.surjOn_hClass hv)
 
-theorem REquiv.exists_bij_on_hClass (hr : x 𝓡 y) : ∃ f : S → S, Set.BijOn f ⟦x⟧𝓗 ⟦y⟧𝓗 := by
+theorem REquiv.exists_bijOn_hClass (hr : x 𝓡 y) : ∃ f : S → S, Set.BijOn f ⟦x⟧𝓗 ⟦y⟧𝓗 := by
   obtain rfl | ⟨v, hv⟩ := hr.ge.eq_or_exists_mul
   exacts [⟨id, Set.bijOn_id _⟩, ⟨_, hr.bijOn_hClass hv⟩]
 
@@ -191,7 +195,7 @@ theorem LEquiv.exists_bijOn_rClass (hl : x 𝓛 y) : ∃ f : S → S, Set.BijOn 
   exacts [⟨id, Set.bijOn_id _⟩, ⟨_, hl.bijOn_rClass hv⟩]
 
 /-- If `x 𝓛 y` such that `v * x = y`, then for all `z 𝓡 x`, `z 𝓛 v * z`. -/
-lemma LEquiv.bijOn_rClass_lEquiv (hr : x 𝓛 y) (hv : v * x = y) {z : S} (hz : z 𝓡 x) :
+lemma LEquiv.lEquiv_mul_left_of_rEquiv (hr : x 𝓛 y) (hv : v * x = y) {z : S} (hz : z 𝓡 x) :
     z 𝓛 v * z := by
   obtain ⟨u, hu⟩ := hr.exists_inverse_translation hv
   exact ⟨⟨u, by rw [← WithOne.coe_mul, ← mul_assoc, translation_id hv hu hz]⟩,
@@ -206,7 +210,7 @@ lemma LEquiv.mapsTo_hClass (hl : x 𝓛 y) (hv : v * x = y) :
   refine (HEquiv.iff_rEquiv_and_lEquiv _ _).2 ⟨?_, ?_⟩
   · rw [← hv]
     exact hzr.lmul_compat v
-  · exact (hl.bijOn_rClass_lEquiv hv hzr).symm.trans (hzl.trans hl)
+  · exact (hl.lEquiv_mul_left_of_rEquiv hv hzr).symm.trans (hzl.trans hl)
 
 lemma LEquiv.invOn_hClass (hv : v * x = y) (hu : u * y = x) :
     Set.InvOn (fun w ↦ u * w) (fun w ↦ v * w) ⟦x⟧𝓗 ⟦y⟧𝓗 :=

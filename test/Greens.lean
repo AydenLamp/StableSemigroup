@@ -1,5 +1,5 @@
 import Semigroup.Greens.Stable
-import Semigroup.Greens.Location
+import Semigroup.Greens.HClassGroup
 import Semigroup.Greens.Finite
 import Semigroup.Ideal.Green
 

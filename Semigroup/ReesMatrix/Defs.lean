@@ -4,9 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
-import Mathlib
-import Semigroup.Regular
-import Mathlib.Algebra.Order.GroupWithZero.Canonical
+module
+
+public import Mathlib.Algebra.Group.WithOne.Defs
+public import Mathlib.Algebra.GroupWithZero.Defs
+public import Semigroup.Regular
 
 /-!
 # Rees Matrix Semigroups
@@ -21,6 +23,8 @@ This file defines Rees matrix semigroups (with and without zero).
   where `P : I → J → WithZero G` and zero products are possible.
 -/
 
+@[expose] public section
+
 namespace Semigroup
 
 section ReesWithoutZero
@@ -29,8 +33,11 @@ variable {I : Type*} {J : Type*} {G : Type*} [Group G] (P : I → J → G)
 
 /-- A Rees matrix semigroup element consists of a row index, column index, and group element. -/
 structure Rees (P : I → J → G) : Type _ where
+  /-- The row index. -/
   i : I
+  /-- The column index. -/
   j : J
+  /-- The group entry. -/
   g : G
 
 omit [Group G] in
@@ -61,8 +68,11 @@ variable {I : Type*} {J : Type*} {G : Type*} [Group G]
 /-- A nonzero element of a Rees matrix semigroup with zero. The full semigroup is
 `Option (ReesZero P)` where `none` represents zero. -/
 structure ReesZero (P : I → J → (WithZero G)) : Type _ where
+  /-- The row index. -/
   i : I
+  /-- The column index. -/
   j : J
+  /-- The group entry. -/
   g : G
 
 variable (P : I → J → (WithZero G))
@@ -103,21 +113,15 @@ instance ReesZero.instSemigroup : Semigroup (Option (ReesZero P)) where
     · simp
     simp
     by_cases h₁ : P b.i a.j ≠ none
-    · simp_all only [WithZero]
-      rw [Option.ne_none_iff_exists] at h₁
-      obtain ⟨p₁, hp₁⟩ := h₁
+    · obtain ⟨p₁, hp₁⟩ := Option.ne_none_iff_exists.mp h₁
       simp [← hp₁]
       · by_cases h₂ : P c.i b.j ≠ none
-        · simp_all only [WithZero]
-          rw [Option.ne_none_iff_exists] at h₂
-          obtain ⟨p₂, hp₂⟩ := h₂
+        · obtain ⟨p₂, hp₂⟩ := Option.ne_none_iff_exists.mp h₂
           simp [← hp₂, ← hp₁, ← mul_assoc]
         · simp_all
     · simp_all
-      by_cases h₁ : P c.i b.j ≠ none
-      · simp_all only [WithZero]
-        rw [Option.ne_none_iff_exists] at h₁
-        obtain ⟨p₁, hp₁⟩ := h₁
+      by_cases h₂ : P c.i b.j ≠ none
+      · obtain ⟨p₁, hp₁⟩ := Option.ne_none_iff_exists.mp h₂
         simp [← hp₁, h₁]
       · simp_all
 
@@ -137,14 +141,14 @@ a `i'` such that `P i' j ≠ none`. -/
 lemma ReesZero.exists_nonzero_col (hreg : ∀ x : Option (ReesZero P), IsRegularElem x)
   (x : ReesZero P) :
     ∃ i' : I, P i' x.j ≠ none := by
-  simp_all only [IsRegularElem, ne_eq]
+  simp_all only [IsRegularElem]
   specialize hreg (some x)
   rcases hreg with ⟨y, hy⟩
   rcases y with (_ | y')
   · contradiction
   · by_cases hp : P y'.i x.j ≠ none
     · use y'.i
-    · simp_all only [ne_eq, not_not]
+    · simp_all only [not_not]
       by_contra hneg
       simp_all
 
@@ -153,16 +157,14 @@ a `j'` such that `P i j' ≠ none`. -/
 lemma ReesZero.exists_nonzero_row (hreg : ∀ x : Option (ReesZero P), IsRegularElem x)
   (x : ReesZero P) :
     ∃ j' : J, P x.i j' ≠ none := by
-  simp_all only [IsRegularElem, ne_eq]
+  simp_all only [IsRegularElem]
   specialize hreg (some x)
   rcases hreg with ⟨y, hy⟩
   rcases y with (_ | y')
   · simp_all
   · simp_all only [mul_def]
     by_cases hp : P y'.i x.j ≠ none
-    · simp_all only [WithZero]
-      rw [Option.ne_none_iff_exists] at hp
-      obtain ⟨g, hg⟩ := hp
+    · obtain ⟨g, hg⟩ := Option.ne_none_iff_exists.mp hp
       rw [← hg] at hy
       simp at hy
       by_cases hp₂ : P x.i y'.j ≠ none
@@ -195,10 +197,8 @@ theorem ReesZero.regular_iff_nonzero (hi : ∀ i, ∃ x : ReesZero P, x.i = i)
     · use none; simp
     · obtain ⟨j', hj'⟩ := hi₂ x.i
       obtain ⟨i', hi'⟩ := hj₂ x.j
-      simp_all only [WithZero]
-      rw [Option.ne_none_iff_exists] at hi' hj'
-      obtain ⟨y, hy⟩ := hi'
-      obtain ⟨z, hz⟩ := hj'
+      obtain ⟨y, hy⟩ := Option.ne_none_iff_exists.mp hi'
+      obtain ⟨z, hz⟩ := Option.ne_none_iff_exists.mp hj'
       use some ⟨i', j', y⁻¹ * x.g⁻¹ * z⁻¹⟩
       simp [← hy, ← hz]
       congr

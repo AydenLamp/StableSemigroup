@@ -4,7 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
-import Mathlib.Algebra.Group.Defs
+module
+
+public import Mathlib.Algebra.Group.Defs
 
 /-!
 # Regular Elements and Regular Semigroups
@@ -16,6 +18,8 @@ This file defines regular elements and regular semigroups.
 * `IsRegularElem` — an element `x` is regular if there exists `y` with `x * y * x = x`.
 * `IsRegular` — a semigroup is regular if every element is regular.
 -/
+
+@[expose] public section
 
 namespace Semigroup
 

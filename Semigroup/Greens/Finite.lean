@@ -4,10 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
-import Mathlib.Data.Fintype.Option
-import Semigroup.Greens.Basic
-import Semigroup.SemigroupIdempotentPow
-import Semigroup.Greens.Stable
+module
+
+public import Semigroup.ForMathlib.WithOne
+public import Semigroup.IdempotentPow
+public import Semigroup.Greens.Stable
 
 /-!
 # Finite Semigroups and Green's Relations
@@ -18,15 +19,11 @@ This file proves theorems about Green's relations in finite semigroups.
 * `Semigroup.stable_of_finite` - Finite semigroups are stable.
 -/
 
+public section
+
 namespace Semigroup
 
 variable {S : Type*} [Semigroup S] [Finite S] {x y : S}
-
-/-! ### The D-J Theorem for Finite Semigroups -/
-
-/-- If `α` is finite, then `WithOne α` is also finite. -/
-instance _root_.WithOne.finite {α : Type*} [Finite α] : Finite (WithOne α) :=
-  inferInstanceAs (Finite (Option α))
 
 /-!
 ### Properties relating 𝓙, 𝓛, and 𝓡
@@ -57,23 +54,17 @@ lemma LEquiv.of_jEquiv_mul_left (hj : x 𝓙 y * x) : x 𝓛 y * x := by
   have hl : n - 1 + 1 = n := by exact Nat.succ_pred_eq_of_ne_zero hneq
   rw [hl, ha]
 
-/-- In finite semigroups, 𝓙-equivalence strengthens the 𝓡-preorder to 𝓡-equivalence. -/
-theorem REquiv.of_rPreorder_and_jEquiv (hr : x ≤𝓡 y) (hj : x 𝓙 y) : x 𝓡 y := by
-  obtain rfl | ⟨z, rfl⟩ := hr.eq_or_exists_mul
-  · rfl
-  · exact (REquiv.of_jEquiv_mul_right hj.symm).symm
-
-/-- In finite semigroups, 𝓙-equivalence strengthens the 𝓛-preorder to 𝓛-equivalence. -/
-theorem LEquiv.of_lPreorder_and_jEquiv (hl : x ≤𝓛 y) (hj : x 𝓙 y) : x 𝓛 y := by
-  obtain rfl | ⟨z, rfl⟩ := hl.eq_or_exists_mul
-  · rfl
-  · exact (LEquiv.of_jEquiv_mul_left hj.symm).symm
-
 /-! ### Stability -/
 
-/-- Finite Semigroups are Stable -/
+/-- Finite semigroups are stable. -/
 instance stable_of_finite : Stable S where
-  rEquiv_of_rPreorder_and_jEquiv hj hr := REquiv.of_rPreorder_and_jEquiv hr hj
-  lEquiv_of_lPreorder_and_jEquiv hj hl := LEquiv.of_lPreorder_and_jEquiv hl hj
+  rEquiv_of_rPreorder_of_jEquiv hr hj := by
+    obtain rfl | ⟨z, rfl⟩ := hr.eq_or_exists_mul
+    · rfl
+    · exact (REquiv.of_jEquiv_mul_right hj.symm).symm
+  lEquiv_of_lPreorder_of_jEquiv hl hj := by
+    obtain rfl | ⟨z, rfl⟩ := hl.eq_or_exists_mul
+    · rfl
+    · exact (LEquiv.of_jEquiv_mul_left hj.symm).symm
 
 end Semigroup
