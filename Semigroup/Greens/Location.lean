@@ -4,8 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
+import Mathlib.Algebra.Group.PNatPowAssoc
 import Semigroup.Stable
 import Semigroup.Greens.Lemma
+import Semigroup.Substructures
 
 /-!
 # The Location Theorem
@@ -15,7 +17,7 @@ conditions are equivalent for `x y : S` where `S` is a semigroup:
   1. `x * y ∈ ⟦x⟧𝓡 ∩ ⟦y⟧𝓛`
   2. `⟦x⟧𝓡 ∩ ⟦y⟧𝓛` contains an idempotent element.
 
-If the semigroup is finite, these conditions are equivalent to
+If the semigroup is stable, these conditions are equivalent to
   3. `x * y 𝓓 x` (Alternatively, `x * y 𝓓 y`) and `x 𝓓 y`
 
 Additionally, we prove that the 𝓗-class of an idempotent element is a group,
@@ -29,7 +31,7 @@ as a group on the subtype `{x : S // x ∈ ⟦e⟧𝓗}`
 
 ## Main Theorems
 
-* `DEquiv.mul_in_inter_iff_equiv` - For `x y : S` where `S` is a finite semigroup, `x * y` is in
+* `DEquiv.mul_in_inter_iff_equiv` - For `x y : S` where `S` is a stable semigroup, `x * y` is in
 `⟦x⟧𝓡 ∩ ⟦y⟧𝓛` iff `x 𝓓 y` and `x * y 𝓓 x`.
 * `mul_in_inter_iff_exists_idempotent` - For `x y : S`, `x * y` is in `⟦x⟧𝓡 ∩ ⟦y⟧𝓛`
 iff there exists an idempotent element in `⟦x⟧𝓡 ∩ ⟦y⟧𝓛`.
@@ -41,7 +43,7 @@ namespace Semigroup
 
 variable {S : Type*} [Semigroup S]
 
-/-- In Finite semigroups, `x * y` is in the intersection of the 𝓡-class of `x` and the 𝓛-class
+/-- In stable semigroups, `x * y` is in the intersection of the 𝓡-class of `x` and the 𝓛-class
 of `y` iff `x`, `y`, and `x * y` are 𝓓-Equivalent. -/
 theorem DEquiv.mul_in_inter_iff_equiv (x y : S) [Stable S] [Pow (WithOne S) ℕ+]
   [PNatPowAssoc (WithOne S)] :

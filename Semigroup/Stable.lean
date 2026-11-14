@@ -4,14 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
-import Mathlib
-import Semigroup.Greens.Defs
 import Semigroup.Greens.Basic
 
 /-!
 # Stable Semigroups
 
-This file defines stable semigroups.
+This file defines stable semigroups and proves basic properties about them.
 
 ## Main Definitions
 * `Semigroup.Stable` - A semigroup is stable if it satisfies the following two properties:
