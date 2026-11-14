@@ -48,7 +48,7 @@ variable {S : Type*} [Semigroup S] [IsSimple S]
   ⟨IsSimple.j_total x y, IsSimple.j_total y x⟩
 
 /-- In a finite simple semigroup, all elements are 𝓓-related. -/
-@[simp] lemma DEquiv.ofSimple [Finite S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)] (x y : S) :
+@[simp] lemma DEquiv.ofSimple [Finite S] (x y : S) :
     x 𝓓 y :=
   JEquiv.to_dEquiv <| JEquiv.ofSimple x y
 
@@ -73,24 +73,20 @@ variable {S : Type*} [SemigroupWithZero S] [IsZeroSimple S]
 
 /-- In a 0-simple semigroup, `x ≤𝓙 y` for every `x` and every nonzero `y`. -/
 theorem JPreorder.ofZeroSimple (x y : S) (hy : y ≠ 0) : x ≤𝓙 y := by
-  have h_ideal := IsZeroSimple.ideal_trivial (MulTwoSidedIdeal.ofSet {y})
-  have hy_mem : y ∈ MulTwoSidedIdeal.ofSet {y} := by
-    simp [MulTwoSidedIdeal.mem_ofSet]
-  rcases h_ideal with hempty | hsingleton | htop
-  · rw [hempty] at hy_mem; exact absurd hy_mem (by contradiction)
-  · have : y ∈ ({0} : Set S) := hsingleton ▸ hy_mem
-    exact absurd (Set.mem_singleton_iff.mp this) hy
-  · have hx_mem : x ∈ (⊤ : MulTwoSidedIdeal S) := MulTwoSidedIdeal.mem_top
-    rw [← htop] at hx_mem
-    rwa [JPreorder.iff_in_mulTwoSidedIdeal] at hx_mem
+  -- `x ≤𝓙 y ↔ x ∈ ofSet {y}`, and `ofSet {y}` must be `⊤` since it contains `y ≠ 0`.
+  have hy_mem : y ∈ MulTwoSidedIdeal.ofSet {y} := by simp
+  rcases IsZeroSimple.ideal_trivial (MulTwoSidedIdeal.ofSet {y}) with h | h | h
+  · rw [h] at hy_mem; contradiction
+  · exact absurd (Set.mem_singleton_iff.mp (h ▸ hy_mem : y ∈ ({0} : Set S))) hy
+  · rw [← JPreorder.iff_in_mulTwoSidedIdeal, h]
+    exact MulTwoSidedIdeal.mem_top
 
 /-- In a 0-simple semigroup, all nonzero elements are 𝓙-related. -/
 theorem JEquiv.ofZeroSimple (x y : S) (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓙 y :=
   ⟨JPreorder.ofZeroSimple x y hy, JPreorder.ofZeroSimple y x hx⟩
 
 /-- In a finite 0-simple semigroup, all nonzero elements are 𝓓-related. -/
-theorem DEquiv.ofZeroSimple [Finite S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)]
-    (x y : S) (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓓 y :=
+theorem DEquiv.ofZeroSimple [Finite S] (x y : S) (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓓 y :=
   JEquiv.to_dEquiv <| JEquiv.ofZeroSimple x y hx hy
 
 end Semigroup
@@ -133,16 +129,10 @@ lemma mulImage_ne_singleton_zero_0simple [SemigroupWithZero S] [IsZeroSimple S] 
 theorem zero_simple_mulImage_eq_univ [SemigroupWithZero S] [IsZeroSimple S] :
     (mulImage S : Set S) = Set.univ := by
   obtain ⟨a, b, hab_ne⟩ := IsZeroSimple.exists_nonzero_mul (S := S)
-  have h_prop := IsZeroSimple.ideal_trivial (S := S)
-  have hab_in : a * b ∈ (mulImage S : Set S) :=
-    Set.mul_mem_mul (Set.mem_univ _) (Set.mem_univ _)
-  rcases h_prop (mulImageIdeal S) with heq_empty | heq_singleton | heq_top
-  · have hset : (mulImageIdeal S : Set S) = (∅ : Set S) :=
-      congrArg (fun (K : MulTwoSidedIdeal S) => (K : Set S)) heq_empty
-    change mulImage S = ∅ at hset; rw [hset] at hab_in; exact hab_in.elim
-  · exact absurd heq_singleton (mulImage_ne_singleton_zero_0simple S)
-  · have hset : (mulImageIdeal S : Set S) = Set.univ :=
-      congrArg (fun (K : MulTwoSidedIdeal S) => (K : Set S)) heq_top
-    change mulImage S = Set.univ at hset; exact hset
+  rcases IsZeroSimple.ideal_trivial (mulImageIdeal S) with h | h | h
+  · have hab : a * b ∈ mulImageIdeal S := Set.mul_mem_mul (Set.mem_univ a) (Set.mem_univ b)
+    rw [h] at hab; contradiction
+  · exact absurd h (mulImage_ne_singleton_zero_0simple S)
+  · exact congrArg SetLike.coe h
 
 end zero_simple

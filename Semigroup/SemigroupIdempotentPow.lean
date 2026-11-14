@@ -48,7 +48,8 @@ namespace Semigroup
 variable {S : Type*} [Semigroup S] [Pow S ℕ+] [PNatPowAssoc S]
 
 /-- Idempotent elements are stable under positive powers. -/
-lemma ppow_succ_eq {x : S} (n : ℕ+) (h_idem : IsIdempotentElem x) : x ^ n = x := by
+lemma _root_.IsIdempotentElem.ppow_eq {x : S} (h_idem : IsIdempotentElem x) (n : ℕ+) :
+    x ^ n = x := by
   induction n with
   | one => rw [ppow_one]
   | succ n' ih => rw [ppow_succ, ih, h_idem]
@@ -71,7 +72,7 @@ lemma exists_repeating_ppow [Finite S] (x : S) : ∃ (m n : ℕ+), x ^ m * x ^ n
 /-- If two powers of an element are both idempotent, then they are equal. -/
 theorem ppow_idempotent_unique {x : S} {m n : ℕ+}
     (hm : IsIdempotentElem (x ^ m)) (hn : IsIdempotentElem (x ^ n)) : x ^ m = x ^ n := by
-  rw [← ppow_succ_eq m hn, ← ppow_succ_eq n hm, ← ppow_mul, ← ppow_mul']
+  rw [← hn.ppow_eq m, ← hm.ppow_eq n, ← ppow_mul, ← ppow_mul']
 
 /-- In a finite semigroup, every element has an idempotent power. -/
 theorem exists_idempotent_ppow [Finite S] (x : S) : ∃ (m : ℕ+), IsIdempotentElem (x ^ m) := by
@@ -122,19 +123,17 @@ variable {M : Type*} [Monoid M]
 lemma pow_succ_eq {x : M} {n : ℕ} (h_idem : IsIdempotentElem x) :
     x ^ (n + 1) = x := by
   induction n with
-  | zero => simp_all
+  | zero => rw [zero_add, pow_one]
   | succ n' ih => rw [pow_succ, ih, h_idem]
-
-variable [Pow M ℕ+] [PNatPowAssoc M]
 
 /-- Every element in a finite monoid has a nonzero idempotent power. -/
 theorem exists_idempotent_pow [Finite M] (x : M) :
     ∃ (n : ℕ), IsIdempotentElem (x ^ n) ∧ n ≠ 0 := by
+  -- A monoid carries a canonical `ℕ+`-power `x ^ (n : ℕ)`, so callers need not supply one.
+  let : Pow M ℕ+ := ⟨fun x n ↦ x ^ (n : ℕ)⟩
+  have : PNatPowAssoc M := ⟨fun _ _ _ ↦ pow_add .., fun _ ↦ pow_one _⟩
   obtain ⟨m, hm⟩ := Semigroup.exists_idempotent_ppow x
-  use m; simp_all only [IsIdempotentElem]
-  constructor
-  · rwa [← ppow_eq_pow]
-  · simp [PNat.ne_zero]
+  exact ⟨m, hm, m.ne_zero⟩
 
 /-- In finite monoids, if `x * a * y = a`, then `x` has a positive power that left-cancels,
 and `y` has a positive power that right-cancels. -/

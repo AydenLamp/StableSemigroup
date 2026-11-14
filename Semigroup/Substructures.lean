@@ -97,7 +97,10 @@ instance : SetLike (Submonoid S) S :=
 
 instance : PartialOrder (Submonoid S) := PartialOrder.ofSetLike _ _
 
-@[simp] lemma mem_carrier {p : Submonoid S} {x : S} : x ∈ p.carrier ↔ x ∈ (p : Set S) :=
+lemma mem_carrier {p : Submonoid S} {x : S} : x ∈ p.carrier ↔ x ∈ (p : Set S) :=
+  Iff.rfl
+
+@[simp] lemma mem_toSubsemigroup {p : Submonoid S} {x : S} : x ∈ p.toSubsemigroup ↔ x ∈ p :=
   Iff.rfl
 
 @[ext] theorem ext {p q : Submonoid S} (h : ∀ x, x ∈ p ↔ x ∈ q) : p = q := SetLike.ext h
@@ -187,7 +190,10 @@ instance : SetLike (Subgroup S) S :=
 
 instance : PartialOrder (Subgroup S) := PartialOrder.ofSetLike _ _
 
-@[simp] lemma mem_carrier {p : Subgroup S} {x : S} : x ∈ p.carrier ↔ x ∈ (p : Set S) :=
+lemma mem_carrier {p : Subgroup S} {x : S} : x ∈ p.carrier ↔ x ∈ (p : Set S) :=
+  Iff.rfl
+
+@[simp] lemma mem_toSubmonoid {p : Subgroup S} {x : S} : x ∈ p.toSubmonoid ↔ x ∈ p :=
   Iff.rfl
 
 @[ext] theorem ext {p q : Subgroup S} (h : ∀ x, x ∈ p ↔ x ∈ q) : p = q := SetLike.ext h

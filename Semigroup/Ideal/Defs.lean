@@ -87,9 +87,9 @@ def ofSet (p : Set S) : LeftIdeal S where
     · exact ⟨y * w, Set.mem_univ _, v, hv, mul_assoc _ _ _⟩
     · exact ⟨y, Set.mem_univ _, x, hin, rfl⟩
 
-@[simp] lemma ofSet_coe (p : Set S) : ↑(ofSet p) = Set.univ * p ∪ p := rfl
+lemma ofSet_coe (p : Set S) : ↑(ofSet p) = Set.univ * p ∪ p := rfl
 
-@[simp] lemma mem_ofSet (p : Set S) (x : S) : x ∈ (ofSet p) ↔ x ∈ Set.univ * p ∪ p := by rfl
+lemma mem_ofSet (p : Set S) (x : S) : x ∈ (ofSet p) ↔ x ∈ Set.univ * p ∪ p := by rfl
 
 end LeftIdeal
 
@@ -135,9 +135,9 @@ def ofSet (p : Set S) : RightIdeal S where
     · exact ⟨w, hw, v * y, Set.mem_univ _, (mul_assoc _ _ _).symm⟩
     · exact ⟨x, hin, y, Set.mem_univ _, rfl⟩
 
-@[simp] lemma ofSet_coe (p : Set S) : ↑(ofSet p) = p * Set.univ ∪ p := rfl
+lemma ofSet_coe (p : Set S) : ↑(ofSet p) = p * Set.univ ∪ p := rfl
 
-@[simp] lemma mem_ofSet (p : Set S) (x : S) : x ∈ (ofSet p) ↔ x ∈ p * Set.univ ∪ p := by rfl
+lemma mem_ofSet (p : Set S) (x : S) : x ∈ (ofSet p) ↔ x ∈ p * Set.univ ∪ p := by rfl
 
 end RightIdeal
 
@@ -202,7 +202,7 @@ instance : PartialOrder (MulTwoSidedIdeal α) := PartialOrder.ofSetLike _ _
 
 @[ext] theorem ext {p q : MulTwoSidedIdeal α} (h : ∀ x, x ∈ p ↔ x ∈ q) : p = q := SetLike.ext h
 
-@[simp] lemma mem' {p : MulTwoSidedIdeal α} (hin : x ∈ p) : z * x * y ∈ p :=
+lemma mem' {p : MulTwoSidedIdeal α} (hin : x ∈ p) : z * x * y ∈ p :=
   p.mem_mul_mem (p.mul_mem_mem hin z) y
 
 @[simp] lemma mul_right_mem {p : MulTwoSidedIdeal α} (hin : x ∈ p) : x * y ∈ p :=
@@ -244,11 +244,11 @@ def ofSet (p : Set S) : MulTwoSidedIdeal S where
       exact Or.inl (Or.inl ⟨y * a, ⟨y, Set.mem_univ _, a, ha, rfl⟩, b, Set.mem_univ _, by group⟩)
     · exact Or.inl (Or.inr (Or.inl ⟨y, Set.mem_univ _, x, hin, rfl⟩))
 
-@[simp] lemma ofSet_coe (p : Set S) :
+lemma ofSet_coe (p : Set S) :
     ((ofSet p) : Set S) =
       Set.univ * p * Set.univ ∪ ↑(LeftIdeal.ofSet p) ∪ ↑(RightIdeal.ofSet p) := rfl
 
-@[simp] lemma mem_ofSet (s : Set S) (x : S) : x ∈ (ofSet s) ↔
+lemma mem_ofSet (s : Set S) (x : S) : x ∈ (ofSet s) ↔
     x ∈ (Set.univ * s * Set.univ ∪ (LeftIdeal.ofSet s : Set S) ∪ RightIdeal.ofSet s) := by rfl
 
 end Defs

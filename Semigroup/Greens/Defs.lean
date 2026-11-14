@@ -136,16 +136,16 @@ namespace REquiv
 theorem isEquivalence : Equivalence (fun x y : S ↦ x 𝓡 y) :=
   IsPreorder.SymmClosure (fun x y : S ↦ x ≤𝓡 y)
 
-@[simp] lemma refl (x : S) : x 𝓡 x := REquiv.isEquivalence.refl x
-@[simp, symm] lemma symm {x y : S} (h : x 𝓡 y) : y 𝓡 x := REquiv.isEquivalence.symm h
+@[simp, refl] lemma refl (x : S) : x 𝓡 x := REquiv.isEquivalence.refl x
+@[symm] lemma symm {x y : S} (h : x 𝓡 y) : y 𝓡 x := REquiv.isEquivalence.symm h
 @[trans] lemma trans {x y z : S} (h₁ : x 𝓡 y) (h₂ : y 𝓡 z) : x 𝓡 z :=
   REquiv.isEquivalence.trans h₁ h₂
 
 def set (x : S) : Set (S) := {y | y 𝓡 x}
 notation "⟦" x "⟧𝓡" => set x
-@[simp] lemma set_def (x : S) : ⟦x⟧𝓡 = {y | y 𝓡 x} := rfl
-@[simp] lemma set_refl (x : S) : x ∈ ⟦x⟧𝓡 := refl x
-@[simp] lemma mem_set {x y : S} : y ∈ ⟦x⟧𝓡 ↔ y 𝓡 x := Iff.rfl
+lemma set_def (x : S) : ⟦x⟧𝓡 = {y | y 𝓡 x} := rfl
+lemma set_refl (x : S) : x ∈ ⟦x⟧𝓡 := refl x
+@[simp, grind =] lemma mem_set {x y : S} : y ∈ ⟦x⟧𝓡 ↔ y 𝓡 x := Iff.rfl
 
 end REquiv
 
@@ -159,15 +159,15 @@ namespace LEquiv
 theorem isEquivalence : Equivalence (fun x y : S ↦ x 𝓛 y) :=
   IsPreorder.SymmClosure (fun x y : S ↦ x ≤𝓛 y)
 
-@[simp] lemma refl (x : S) : x 𝓛 x := isEquivalence.refl x
-@[simp, symm] lemma symm {x y : S} (h : x 𝓛 y) : y 𝓛 x := isEquivalence.symm h
+@[simp, refl] lemma refl (x : S) : x 𝓛 x := isEquivalence.refl x
+@[symm] lemma symm {x y : S} (h : x 𝓛 y) : y 𝓛 x := isEquivalence.symm h
 @[trans] lemma trans {x y z : S} (h₁ : x 𝓛 y) (h₂ : y 𝓛 z) : x 𝓛 z := isEquivalence.trans h₁ h₂
 
 def set (x : S) : Set (S) := {y | y 𝓛 x}
 notation "⟦" x "⟧𝓛" => set x
-@[simp] lemma set_def (x : S) : ⟦x⟧𝓛 = {y | y 𝓛 x} := rfl
-@[simp] lemma set_refl (x : S) : x ∈ ⟦x⟧𝓛 := refl x
-@[simp] lemma mem_set {x y : S} : y ∈ ⟦x⟧𝓛 ↔ y 𝓛 x := Iff.rfl
+lemma set_def (x : S) : ⟦x⟧𝓛 = {y | y 𝓛 x} := rfl
+lemma set_refl (x : S) : x ∈ ⟦x⟧𝓛 := refl x
+@[simp, grind =] lemma mem_set {x y : S} : y ∈ ⟦x⟧𝓛 ↔ y 𝓛 x := Iff.rfl
 
 end LEquiv
 
@@ -181,15 +181,15 @@ namespace JEquiv
 theorem isEquivalence : Equivalence (fun x y : S ↦ x 𝓙 y) :=
   IsPreorder.SymmClosure (fun x y : S ↦ x ≤𝓙 y)
 
-@[simp] lemma refl (x : S) : x 𝓙 x := isEquivalence.refl x
-@[simp, symm] lemma symm {x y : S} (h : x 𝓙 y) : y 𝓙 x := isEquivalence.symm h
+@[simp, refl] lemma refl (x : S) : x 𝓙 x := isEquivalence.refl x
+@[symm] lemma symm {x y : S} (h : x 𝓙 y) : y 𝓙 x := isEquivalence.symm h
 @[trans] lemma trans {x y z : S} (h₁ : x 𝓙 y) (h₂ : y 𝓙 z) : x 𝓙 z := isEquivalence.trans h₁ h₂
 
 def set (x : S) : Set (S) := {y | y 𝓙 x}
 notation "⟦" x "⟧𝓙" => set x
-@[simp] lemma set_def (x : S) : ⟦x⟧𝓙 = {y | y 𝓙 x} := rfl
-@[simp] lemma set_refl (x : S) : x ∈ ⟦x⟧𝓙 := JEquiv.refl x
-@[simp] lemma mem_set {x y : S} : y ∈ ⟦x⟧𝓙 ↔ y 𝓙 x := Iff.rfl
+lemma set_def (x : S) : ⟦x⟧𝓙 = {y | y 𝓙 x} := rfl
+lemma set_refl (x : S) : x ∈ ⟦x⟧𝓙 := JEquiv.refl x
+@[simp, grind =] lemma mem_set {x y : S} : y ∈ ⟦x⟧𝓙 ↔ y 𝓙 x := Iff.rfl
 
 end JEquiv
 
@@ -203,15 +203,15 @@ namespace HEquiv
 theorem isEquivalence : Equivalence (fun x y : S ↦ x 𝓗 y) :=
   IsPreorder.SymmClosure (fun x y : S ↦ x ≤𝓗 y)
 
-@[simp] lemma refl (x : S) : x 𝓗 x := isEquivalence.refl x
-@[simp, symm] lemma symm {x y : S} (h : x 𝓗 y) : y 𝓗 x := isEquivalence.symm h
+@[simp, refl] lemma refl (x : S) : x 𝓗 x := isEquivalence.refl x
+@[symm] lemma symm {x y : S} (h : x 𝓗 y) : y 𝓗 x := isEquivalence.symm h
 @[trans] lemma trans {x y z : S} (h₁ : x 𝓗 y) (h₂ : y 𝓗 z) : x 𝓗 z := isEquivalence.trans h₁ h₂
 
 def set (x : S) : Set (S) := {y | y 𝓗 x}
 notation "⟦" x "⟧𝓗" => set x
-@[simp] lemma set_def (x : S) : ⟦x⟧𝓗 = {y | y 𝓗 x} := rfl
-@[simp] lemma set_refl (x : S) : x ∈ ⟦x⟧𝓗 := HEquiv.refl x
-@[simp] lemma mem_set {x y : S} : y ∈ ⟦x⟧𝓗 ↔ y 𝓗 x := Iff.rfl
+lemma set_def (x : S) : ⟦x⟧𝓗 = {y | y 𝓗 x} := rfl
+lemma set_refl (x : S) : x ∈ ⟦x⟧𝓗 := HEquiv.refl x
+@[simp, grind =] lemma mem_set {x y : S} : y ∈ ⟦x⟧𝓗 ↔ y 𝓗 x := Iff.rfl
 
 end HEquiv
 
@@ -277,9 +277,9 @@ infix:50 " 𝓓 " => DEquiv
 
 namespace DEquiv
 
-@[simp] lemma refl (x : S) : x 𝓓 x := ⟨x, REquiv.refl x, LEquiv.refl x⟩
+@[simp, refl] lemma refl (x : S) : x 𝓓 x := ⟨x, REquiv.refl x, LEquiv.refl x⟩
 
-@[simp, symm] lemma symm {x y : S} (h : x 𝓓 y) : y 𝓓 x := by
+@[symm] lemma symm {x y : S} (h : x 𝓓 y) : y 𝓓 x := by
   obtain ⟨z, hz₁, hz₂⟩ := h
   rw [DEquiv, rEquiv_lEquiv_comm]
   exact ⟨z, hz₂.symm, hz₁.symm⟩
@@ -301,9 +301,9 @@ theorem isEquivalence : Equivalence (fun x y : S => x 𝓓 y) where
 
 def set (x : S) : Set (S) := {y | y 𝓓 x}
 notation "⟦" x "⟧𝓓" => set x
-@[simp] lemma set_def (x : S) : ⟦x⟧𝓓 = {y | y 𝓓 x} := rfl
-@[simp] lemma set_refl (x : S) : x ∈ ⟦x⟧𝓓 := DEquiv.refl x
-@[simp] lemma mem_set {x y : S} : y ∈ ⟦x⟧𝓓 ↔ y 𝓓 x := Iff.rfl
+lemma set_def (x : S) : ⟦x⟧𝓓 = {y | y 𝓓 x} := rfl
+lemma set_refl (x : S) : x ∈ ⟦x⟧𝓓 := DEquiv.refl x
+@[simp, grind =] lemma mem_set {x y : S} : y ∈ ⟦x⟧𝓓 ↔ y 𝓓 x := Iff.rfl
 
 end DEquiv
 
@@ -311,13 +311,13 @@ end DEquiv
 
 variable {x y : S}
 
-@[simp] lemma REquiv.le (h : x 𝓡 y) : x ≤𝓡 y := h.1
-@[simp] lemma REquiv.ge (h : x 𝓡 y) : y ≤𝓡 x := h.2
-@[simp] lemma LEquiv.le (h : x 𝓛 y) : x ≤𝓛 y := h.1
-@[simp] lemma LEquiv.ge (h : x 𝓛 y) : y ≤𝓛 x := h.2
-@[simp] lemma JEquiv.le (h : x 𝓙 y) : x ≤𝓙 y := h.1
-@[simp] lemma JEquiv.ge (h : x 𝓙 y) : y ≤𝓙 x := h.2
-@[simp] lemma HEquiv.le (h : x 𝓗 y) : x ≤𝓗 y := h.1
-@[simp] lemma HEquiv.ge (h : x 𝓗 y) : y ≤𝓗 x := h.2
+@[grind →] lemma REquiv.le (h : x 𝓡 y) : x ≤𝓡 y := h.1
+@[grind →] lemma REquiv.ge (h : x 𝓡 y) : y ≤𝓡 x := h.2
+@[grind →] lemma LEquiv.le (h : x 𝓛 y) : x ≤𝓛 y := h.1
+@[grind →] lemma LEquiv.ge (h : x 𝓛 y) : y ≤𝓛 x := h.2
+@[grind →] lemma JEquiv.le (h : x 𝓙 y) : x ≤𝓙 y := h.1
+@[grind →] lemma JEquiv.ge (h : x 𝓙 y) : y ≤𝓙 x := h.2
+@[grind →] lemma HEquiv.le (h : x 𝓗 y) : x ≤𝓗 y := h.1
+@[grind →] lemma HEquiv.ge (h : x 𝓗 y) : y ≤𝓗 x := h.2
 
 end Semigroup

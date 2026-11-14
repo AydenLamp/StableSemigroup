@@ -79,7 +79,7 @@ theorem minimal_ideal_unique (I J : MulTwoSidedIdeal α) (hI : IsMinimal I) (hJ 
 
 variable {S : Type*} [Semigroup S]
 
-@[simp] lemma ofSet_coe_prop (p : Set S) {x y z : S} (hin : x ∈ ↑(ofSet p)) :
+lemma ofSet_coe_prop (p : Set S) {x y z : S} (hin : x ∈ ↑(ofSet p)) :
     z * x * y ∈ ↑(ofSet p) :=
   (ofSet p).mem_mul_mem ((ofSet p).mul_mem_mem hin z) y
 

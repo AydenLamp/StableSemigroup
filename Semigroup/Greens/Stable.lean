@@ -30,74 +30,43 @@ class Stable (S : Type*) [Semigroup S] where
 
 variable {S : Type*} [Semigroup S] [Stable S] {x y u v : S}
 
-@[simp] lemma rEquiv_of_rPreorder_and_jEquiv_of_Stable (hj : x 𝓙 y) (hr : x ≤𝓡 y) : x 𝓡 y :=
+@[grind →] lemma rEquiv_of_rPreorder_and_jEquiv_of_Stable (hj : x 𝓙 y) (hr : x ≤𝓡 y) : x 𝓡 y :=
   Stable.rEquiv_of_rPreorder_and_jEquiv hj hr
 
-@[simp] lemma lEquiv_of_lPreorder_and_jEquiv_of_Stable (hj : x 𝓙 y) (hl : x ≤𝓛 y) : x 𝓛 y :=
+@[grind →] lemma lEquiv_of_lPreorder_and_jEquiv_of_Stable (hj : x 𝓙 y) (hl : x ≤𝓛 y) : x 𝓛 y :=
   Stable.lEquiv_of_lPreorder_and_jEquiv hj hl
 
+/-- In stable semigroups, 𝓙-equivalent elements are 𝓓-equivalent. -/
 lemma JEquiv.to_dEquiv (hj : x 𝓙 y) : x 𝓓 y := by
-  obtain ⟨⟨u, v, huv⟩, _⟩ := by exact hj
-  cases v
-  · simp only [mul_one] at huv
-    use x
-    simp only [REquiv.refl, true_and]
-    apply Stable.lEquiv_of_lPreorder_and_jEquiv hj
-    use u
-  · expose_names
-    symm
-    use y * a
-    constructor
-    · have hj₂ : y * a 𝓙 y := by
-        refine ⟨by simp, ?_⟩
-        trans x
-        · simp [hj]
-        · use u, 1
-          simp [huv, ← mul_assoc]
-      symm
-      simp_all
-    · have hj₂ : x 𝓙 y * a := by
-        constructor
-        · use u, 1
-          simp [huv, ← mul_assoc]
-        · trans y
-          all_goals simp_all
-      symm
-      apply Stable.lEquiv_of_lPreorder_and_jEquiv hj₂
-      use u
-      simp [huv, ← mul_assoc]
+  obtain ⟨⟨u, v, huv⟩, -⟩ := id hj
+  cases v with
+  | one =>
+    have hl : x ≤𝓛 y := ⟨u, by simpa using huv⟩
+    exact (Stable.lEquiv_of_lPreorder_and_jEquiv hj hl).to_dEquiv
+  | coe a =>
+    -- Write `x = u * (y * a)`. The pivot `w := y * a` satisfies `y 𝓡 w` and `w 𝓛 x`.
+    have hxw : x ≤𝓛 y * a := ⟨u, by rw [WithOne.coe_mul, ← mul_assoc, huv]⟩
+    have hwy : y * a 𝓙 y :=
+      ⟨RPreorder.mul_right_self.to_jPreorder, hj.ge.trans hxw.to_jPreorder⟩
+    have hr : y * a 𝓡 y := Stable.rEquiv_of_rPreorder_and_jEquiv hwy RPreorder.mul_right_self
+    have hl : x 𝓛 y * a := Stable.lEquiv_of_lPreorder_and_jEquiv (hj.trans hwy.symm) hxw
+    exact DEquiv.symm ⟨y * a, hr.symm, hl.symm⟩
 
 /-- In stable semigroups, the 𝓓-relation equals the 𝓙-relation. -/
-theorem dEquiv_iff_jEquiv : x 𝓓 y ↔ x 𝓙 y := ⟨DEquiv.to_jEquiv, JEquiv.to_dEquiv⟩
+@[grind =] theorem dEquiv_iff_jEquiv : x 𝓓 y ↔ x 𝓙 y := ⟨DEquiv.to_jEquiv, JEquiv.to_dEquiv⟩
 
 /-- Sandwich property. In stable  semigroups, an element sandwiched between two factors is 𝓗-related
 to its left and right partial products. -/
 theorem HEquiv.of_eq_sandwich (h : u * x * v = x) : x 𝓗 u * x ∧ x 𝓗 x * v := by
-  have hj₁ : x 𝓙 u * x := by
-    rw [JEquiv]
-    refine ⟨RPreorder.to_jPreorder ?_, LPreorder.to_jPreorder ?_⟩
-    · use v
-      simp_all [← WithOne.coe_mul]
-    · simp
-  have hj₂ : x 𝓙 x * v := by
-    rw [JEquiv]
-    refine ⟨LPreorder.to_jPreorder ?_, RPreorder.to_jPreorder ?_⟩
-    · use u
-      simp_all [← WithOne.coe_mul, ← mul_assoc]
-    · simp
-  simp only [HEquiv.iff_rEquiv_and_lEquiv ]
-  refine ⟨⟨?_ , ?_⟩, ⟨?_ , ?_⟩⟩
-  · apply Stable.rEquiv_of_rPreorder_and_jEquiv hj₁
-    use v
-    simp_all [← WithOne.coe_mul]
-  · symm
-    apply Stable.lEquiv_of_lPreorder_and_jEquiv hj₁.symm
-    simp
-  · symm
-    apply Stable.rEquiv_of_rPreorder_and_jEquiv hj₂.symm
-    simp
-  · apply Stable.lEquiv_of_lPreorder_and_jEquiv hj₂
-    use u
-    simp_all [← WithOne.coe_mul, ← mul_assoc]
+  -- `x = (u * x) * v` and `x = u * (x * v)` give the two nontrivial inequalities.
+  have hr : x ≤𝓡 u * x := ⟨v, by rw [← WithOne.coe_mul, h]⟩
+  have hl : x ≤𝓛 x * v := ⟨u, by rw [← WithOne.coe_mul, ← mul_assoc, h]⟩
+  have hj₁ : x 𝓙 u * x := ⟨hr.to_jPreorder, LPreorder.mul_left_self.to_jPreorder⟩
+  have hj₂ : x 𝓙 x * v := ⟨hl.to_jPreorder, RPreorder.mul_right_self.to_jPreorder⟩
+  rw [HEquiv.iff_rEquiv_and_lEquiv, HEquiv.iff_rEquiv_and_lEquiv]
+  exact ⟨⟨Stable.rEquiv_of_rPreorder_and_jEquiv hj₁ hr,
+      (Stable.lEquiv_of_lPreorder_and_jEquiv hj₁.symm LPreorder.mul_left_self).symm⟩,
+    ⟨(Stable.rEquiv_of_rPreorder_and_jEquiv hj₂.symm RPreorder.mul_right_self).symm,
+      Stable.lEquiv_of_lPreorder_and_jEquiv hj₂ hl⟩⟩
 
 end Semigroup
