@@ -5,7 +5,7 @@ Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 -/
 
 import Mathlib.Algebra.Group.PNatPowAssoc
-import Semigroup.Stable
+import Semigroup.Greens.Stable
 import Semigroup.Greens.Lemma
 import Semigroup.Substructures
 

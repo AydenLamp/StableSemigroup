@@ -7,7 +7,7 @@ Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
 import Mathlib.Data.Fintype.Option
 import Semigroup.Greens.Basic
 import Semigroup.SemigroupIdempotentPow
-import Semigroup.Stable
+import Semigroup.Greens.Stable
 
 /-!
 # Finite Semigroups and Green's Relations

@@ -1,8 +1,13 @@
+/-
+Copyright (c) 2026 The Mathlib Contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Nathan Hart-Hodgson, Ayden Lamparski, Soleil Repple, Howard Straubing
+-/
 
 import Mathlib.Algebra.Group.Pointwise.Set.Basic
 import Mathlib.Algebra.GroupWithZero.Defs
 import Mathlib.Data.SetLike.Basic
-import Mathlib.Tactic
+import Mathlib.Tactic.Group
 
 /-!
 # Ideal Structure for Semigroups
@@ -146,6 +151,8 @@ structure MulTwoSidedIdeal (α : Type*) [Mul α] where
 
 namespace MulTwoSidedIdeal
 
+section Defs
+
 variable {α : Type*} [Mul α] {x y z : α}
 
 /-- The intersection of two ideals is an ideal. -/
@@ -204,6 +211,7 @@ instance : PartialOrder (MulTwoSidedIdeal α) := PartialOrder.ofSetLike _ _
 @[simp] lemma mul_left_mem {p : MulTwoSidedIdeal α} (hin : x ∈ p) : y * x ∈ p :=
   p.mul_mem_mem hin y
 
+
 variable {S : Type*} [Semigroup S]
 
 /-- The smallest two-sided ideal containing a given set. -/
@@ -243,10 +251,14 @@ def ofSet (p : Set S) : MulTwoSidedIdeal S where
 @[simp] lemma mem_ofSet (s : Set S) (x : S) : x ∈ (ofSet s) ↔
     x ∈ (Set.univ * s * Set.univ ∪ (LeftIdeal.ofSet s : Set S) ∪ RightIdeal.ofSet s) := by rfl
 
+end Defs
+
 /-! ## Minimal Ideals -/
 
+variable {α : Type*} {x y z : α}
+
 /-- An ideal is minimal if it is nonempty and has no proper nonempty sub-ideal. -/
-def IsMinimal (I : MulTwoSidedIdeal α) : Prop :=
+def IsMinimal [Mul α] (I : MulTwoSidedIdeal α) : Prop :=
   I ≠ ∅ ∧ ∀ (J : MulTwoSidedIdeal α), J ≠ ∅ → J ≤ I → J = I
 
 /-- An ideal is 0-minimal if it is nonempty, not `{0}`, and every sub-ideal is
@@ -255,7 +267,7 @@ def IsZeroMinimal [MulZeroClass α] (I : MulTwoSidedIdeal α) : Prop :=
   I ≠ ∅ ∧ I.carrier ≠ {0} ∧
     ∀ (J : MulTwoSidedIdeal α), J ≠ ∅ → J ≤ I → (J = I ∨ J.carrier = {0})
 
-@[simp] lemma isMinimal_iff (I : MulTwoSidedIdeal α) :
+@[simp] lemma isMinimal_iff [Mul α] (I : MulTwoSidedIdeal α) :
     I.IsMinimal ↔ I ≠ ∅ ∧ ∀ (J : MulTwoSidedIdeal α), J ≠ ∅ → J ≤ I → J = I := Iff.rfl
 
 @[simp] lemma isZeroMinimal_iff [MulZeroClass α] (I : MulTwoSidedIdeal α) :

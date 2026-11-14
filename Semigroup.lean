@@ -1,7 +1,7 @@
 import Semigroup.Greens.Defs
 import Semigroup.Greens.Basic
 import Semigroup.Greens.Lemma
-import Semigroup.Stable
+import Semigroup.Greens.Stable
 import Semigroup.SemigroupIdempotentPow
 import Semigroup.Greens.Finite
 import Semigroup.Greens.Location
@@ -10,4 +10,4 @@ import Semigroup.Regular
 import Semigroup.Ideal.Basic
 import Semigroup.Ideal.Defs
 import Semigroup.Ideal.Green
-import Semigroup.Ideal.Quotient
+import Semigroup.Ideal.Simple
